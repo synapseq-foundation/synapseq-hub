@@ -119,7 +119,36 @@ Examples of valid background audio attribution in `.spsq` files:
 Each `.spsq` file must include a header using `##` comment lines:
 
 ```
-## Title: Deep Focus
+## Deep Focus (20 minutes)
+##
+## Deep Focus is a steady, mid-intensity sequence designed to support
+## alertness and sustained concentration.
+## It uses clear rhythmic stimulation to promote focus without excess
+## intensity, making it suitable for work, study, and other
+## cognitively demanding tasks.
+##
+## License: CC BY-SA 4.0
+```
+
+Recommended structure:
+
+- First line: sequence title, optionally followed by duration in parentheses
+- Blank separator line using `##`
+- One or more short description lines using simple, direct language
+- Another blank separator line using `##`
+- A license line such as `## License: CC BY-SA 4.0`
+- Optional background attribution lines when external audio is included
+
+Comment lines in the header should be wrapped at 80 characters when possible.
+
+If the sequence includes background audio, extend the header like this:
+
+```
+## Deep Focus (20 minutes)
+##
+## Deep Focus is a steady, mid-intensity sequence designed to support
+## alertness and sustained concentration.
+##
 ## License: CC BY-SA 4.0
 ##
 ## Background: "Ocean Waves" by freesound.org/user/example (CC BY 3.0)
@@ -152,12 +181,12 @@ Each sequence must have a corresponding object inside the `entries` array with t
   "dependencies": [
     {
       "type": "ambiance",
-      "name": "ocean-drift.wav",
+      "id": "ocean-drift.wav",
       "download_url": "https://hub.synapseq.org/relaxation/ocean-drift.wav"
     },
     {
       "type": "extends",
-      "name": "base-relax-presets.spsc",
+      "id": "base-relax-presets.spsc",
       "download_url": "https://hub.synapseq.org/relaxation/base-relax-presets.spsc"
     }
   ]
