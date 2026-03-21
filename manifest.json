@@ -1,0 +1,46 @@
+{
+  "version": "2.0.0",
+  "lastUpdated": "2026-03-21T00:00:00Z",
+  "entries": [
+    {
+      "id": "calm-state",
+      "name": "Calm State",
+      "author": "Ruan",
+      "path": "relaxation/calm-state.spsq",
+      "category": "Relaxation",
+      "download_url": "https://hub.synapseq.org/relaxation/calm-state.spsq",
+      "updated_at": "2026-03-21T00:00:00Z",
+      "dependencies": []
+    },
+    {
+      "id": "quiet-descent",
+      "name": "Quiet Descent",
+      "author": "Ruan",
+      "path": "meditation/quiet-descent.spsq",
+      "category": "Meditation",
+      "download_url": "https://hub.synapseq.org/meditation/quiet-descent.spsq",
+      "updated_at": "2026-03-21T00:00:00Z",
+      "dependencies": []
+    },
+    {
+      "id": "alert-flow",
+      "name": "Alert Flow",
+      "author": "Ruan",
+      "path": "focus/alert-flow.spsq",
+      "category": "Focus",
+      "download_url": "https://hub.synapseq.org/focus/alert-flow.spsq",
+      "updated_at": "2026-03-21T00:00:00Z",
+      "dependencies": []
+    },
+    {
+      "id": "neutral-relax",
+      "name": "Neutral Relax",
+      "author": "Ruan",
+      "path": "relaxation/neutral-relax.spsq",
+      "category": "Relaxation",
+      "download_url": "https://hub.synapseq.org/relaxation/neutral-relax.spsq",
+      "updated_at": "2026-03-21T00:00:00Z",
+      "dependencies": []
+    }
+  ]
+}
