@@ -152,12 +152,12 @@ Each sequence must have a corresponding object inside the `entries` array with t
   "dependencies": [
     {
       "type": "ambiance",
-      "name": "ocean-drift.wav",
+      "id": "ocean-drift.wav",
       "download_url": "https://hub.synapseq.org/relaxation/ocean-drift.wav"
     },
     {
       "type": "extends",
-      "name": "base-relax-presets.spsc",
+      "id": "base-relax-presets.spsc",
       "download_url": "https://hub.synapseq.org/relaxation/base-relax-presets.spsc"
     }
   ]
