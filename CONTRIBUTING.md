@@ -1,109 +1,47 @@
 # Contributing to SynapSeq Hub
 
-Thank you for your interest in contributing to the **SynapSeq Hub**, the official repository of sequences, presets, and soundscapes for [SynapSeq](https://github.com/ruanklein/synapseq).
+Thank you for your interest in contributing to the **SynapSeq Hub**, the official repository of sequences for [SynapSeq](https://github.com/ruanklein/synapseq).
 
-This document describes how to contribute new `.spsq` sequences, preset lists, or background audio files while ensuring quality, compatibility, and integrity.
+This document describes how to contribute new `.spsq` sequences, `.spsc` preset or option files, and background audio files while ensuring quality, compatibility, and integrity.
 
 ---
 
 ## Repository Structure
 
-All contributions must follow this file naming pattern:
+Contributions are now organized by category directly at the root of the repository.
+
+Each category has its own directory, and the sequence file lives inside that category directory together with its local dependencies, if any.
+
+### Directory layout
 
 ```
-packages/<category>-<namespace>-<name>.spsq
+<category>/<sequence>.spsq
+<category>/<dependency-file>
 ```
 
 Where:
 
-- **`<category>`** → Sequence category (`focus`, `relax`, `meditation`, `sleep`, `creative`, etc.)
-  - **Note:** The `samples` category is reserved for official SynapSeq example sequences only
-- **`<namespace>`** → Identifier chosen by the contributor (see rules below)
-- **`<name>`** → The name of your sequence
-
-All files (`.spsq` sequences and `.wav` backgrounds) are stored in the `packages/` directory at the root level.
-
-**Naming conventions for different file types:**
-
-- **Sequences:** `<category>-<namespace>-<name>.spsq`
-- **Preset lists:** `presets-<namespace>-<name>.spsq`
-- **Background audio:** `<namespace>-<name>.wav`
-- **Thumbnails (optional):** `<category>-<namespace>-<name>.webp`
+- **`<category>`** → Sequence category (`focus`, `relaxation`, `meditation`, `sleep`, `creative`, etc.)
+- **`<sequence>`** → File name of your sequence
+- **`<dependency-file>`** → Any local file referenced by the sequence and distributed with it, such as a background `.wav`
 
 ### Examples
 
 ```
-packages/focus-janedoe-deep-work.spsq
-packages/focus-janedoe-deep-work.webp
-packages/relax-neurofocus-ocean-waves.spsq
-packages/relax-neurofocus-ocean-waves.webp
-packages/meditation-johndoe-mindfulness.spsq
-packages/presets-janedoe-focus-collection.spsq
-packages/presets-neurofocus-relax-set.spsq
-packages/janedoe-ocean-waves.wav
-packages/neurofocus-rain-ambience.wav
+focus/deep-work.spsq
+focus/deep-work.wav
+relaxation/ocean-drift.spsq
+relaxation/ocean-drift.wav
+meditation/quiet-descent.spsq
 ```
 
-**Official examples (samples category - reserved):**
-
-```
-packages/samples-synapseq-binaural.spsq
-packages/samples-synapseq-focus-one.spsq
-packages/synapseq-pink-noise.wav
-```
-
-Pull Requests that do **not** follow this naming convention will be rejected.
-
----
-
-## Author Namespace Rules
-
-Every contributor must define a **namespace**, which uniquely identifies the author inside the SynapSeq Hub.
-
-This namespace **does not need to match your GitHub username**, but it must follow strict formatting rules to ensure consistency and avoid collisions.
-
-### Namespace Requirements
-
-Your namespace **must** follow all of these rules:
-
-- Only lowercase letters (`a–z`)
-- Length between **3 and 20 characters**
-- Allowed characters:
-  - `a–z`
-  - `0–9`
-  - `-` (hyphen)
-- Must **start with a letter**
-- Must be **unique** within the Hub
-- Must remain **consistent across all your PRs**
-- Must **not** use reserved or generic names, such as:
-  - `focus`, `relax`, `sleep`, `samples`, `synapseq`
-  - `user`, `test`, `anon`, `default`, `temp`
-
-### Examples of valid namespaces
-
-```
-janedoe
-john-doe
-neurofocus
-alpha-lab
-zencreator7
-```
-
-### Examples of invalid namespaces
-
-```
-samples
-focus
-user
-aa
-developer_123
-9creator
-MyName
-```
+Pull Requests that place contribution files outside their category directory may be rejected.
 
 ---
 
 ## Quality and Integrity
+
+SynapSeq Hub is consumed by the SynapSeq CLI, which downloads and exposes community sequences to end users.
 
 SynapSeq Hub maintains a high standard of clarity and honesty about what brainwave entrainment can and cannot do.
 
@@ -127,26 +65,24 @@ Brainwave audio **cannot** reproduce the effects of drugs, medications, or chemi
 
 ### 1. Allowed file types
 
-- `.spsq` → Sequence or preset list (UTF‑8)
-- `.wav` → Optional background audio (PCM WAV, 8/16/24‑bit, stereo)
-- `.webp` → Optional thumbnail (recommended dimensions: 320x180)
+- `.spsq` → Sequence file (UTF‑8)
+- `.spsc` → Preset or options configuration file (UTF‑8)
+- `.wav` → Optional ambiance audio (PCM WAV, 8/16/24‑bit, stereo)
 
 ### 2. Size limits
 
 - `.spsq` files: **max 32 KB**
-- `.wav` backgrounds: **max 10 MB**
-- `.webp` thumbnails: **max 200 KB**
+- `.wav` ambiance files: **max 20 MB**
 
 ### 3. Dependency rules
 
-- All `@presetlist` files must follow the pattern `presets-<namespace>-<name>.spsq`
-- All `@background` files must follow the pattern `<namespace>-<name>.wav`
-- All thumbnail files must follow the pattern `<category>-<namespace>-<name>.webp`
-- All files must be stored in `packages/` directory
+- All dependencies must live inside the same category directory as the main `.spsq` sequence whenever possible
+- The `path` and every dependency `download_url` in `manifest.json` must point to the actual repository location of the file
+- Dependency names in `manifest.json` should match the file names being distributed
+- Dependencies with `type: "extends"` must always point to a `.spsc` file
+- Dependencies with `type: "ambiance"` must always point to a `.wav` file compatible with SynapSeq CLI limits: PCM WAV, 8/16/24-bit, up to 20 MB
 - External URLs are not allowed
-- All referenced files must exist in the `packages/` directory
-- Your namespace must be consistent across all your files (sequences, presets, and backgrounds)
-- Thumbnails are optional; if not provided, a default image will be used
+- All referenced local files must exist in the repository
 
 ### 4. Licensing
 
@@ -184,11 +120,70 @@ Each `.spsq` file must include a header using `##` comment lines:
 
 ```
 ## Title: Deep Focus
-## Author: Jane Doe
 ## License: CC BY-SA 4.0
 ##
 ## Background: "Ocean Waves" by freesound.org/user/example (CC BY 3.0)
 ## Source: https://freesound.org/people/example/sounds/12345/
+```
+
+The author name is no longer declared in the `.spsq` header. It must be provided in `manifest.json` for the corresponding entry.
+
+---
+
+## Manifest Update Requirements
+
+Every contribution must include a manual update to `manifest.json`.
+
+The manifest is the source of truth used by SynapSeq Hub clients to list downloadable entries. If you add a new sequence and do not add it to `manifest.json`, the contribution will be incomplete.
+
+### Required entry fields
+
+Each sequence must have a corresponding object inside the `entries` array with the following structure:
+
+```json
+{
+  "id": "ocean-drift",
+  "name": "Ocean Drift",
+  "author": "Jane Doe",
+  "category": "Relaxation",
+  "path": "relaxation/ocean-drift.spsq",
+  "download_url": "https://hub.synapseq.org/relaxation/ocean-drift.spsq",
+  "updated_at": "2026-03-21T00:00:00Z",
+  "dependencies": [
+    {
+      "type": "ambiance",
+      "name": "ocean-drift.wav",
+      "download_url": "https://hub.synapseq.org/relaxation/ocean-drift.wav"
+    },
+    {
+      "type": "extends",
+      "name": "base-relax-presets.spsc",
+      "download_url": "https://hub.synapseq.org/relaxation/base-relax-presets.spsc"
+    }
+  ]
+}
+```
+
+### Field meanings
+
+- **`id`** → Stable unique identifier for the entry
+- **`name`** → Human-readable sequence name
+- **`author`** → Author name shown by the Hub client
+- **`category`** → Display category used by the Hub client
+- **`path`** → Relative path to the main `.spsq` file inside this repository
+- **`download_url`** → Public download URL for the main `.spsq` file
+- **`updated_at`** → ISO 8601 timestamp in UTC
+- **`dependencies`** → Optional list of downloadable dependencies
+
+### Supported dependency types
+
+- **`extends`** → Additional `.spsc` file used as an extension, preset source, or options source
+- **`ambiance`** → Background audio file in `.wav` format
+
+When your sequence has no dependencies, use an empty array:
+
+```json
+"dependencies": []
 ```
 
 ---
@@ -197,12 +192,13 @@ Each `.spsq` file must include a header using `##` comment lines:
 
 1. Fork the repository
 2. Clone your fork
-3. Add your `.spsq` file(s) to the `packages/` directory following the naming convention
-4. Add any background `.wav` files to the `packages/` directory
-5. (Optional) Add a thumbnail `.webp` file (320x180) to the `packages/` directory
-6. Validate locally by running `python3 generate_manifest.py`
-7. Commit and push
-8. Open a Pull Request
+3. Add your `.spsq` file to the correct category directory at the repository root
+4. Add any local dependencies for that sequence in the same category directory
+5. Update `manifest.json` manually by adding a new object to the `entries` array
+6. Make sure `path`, `download_url`, `updated_at`, and `dependencies` are correct
+7. Validate the JSON formatting before opening your Pull Request
+8. Commit and push
+9. Open a Pull Request
 
 ---
 
@@ -211,9 +207,9 @@ Each `.spsq` file must include a header using `##` comment lines:
 For questions or suggestions:
 
 - **Issues:**  
-  https://github.com/ruanklein/synapseq/issues
+  https://github.com/synapseq-foundation/synapseq/issues
 
 - **Discussions:**  
-  https://github.com/ruanklein/synapseq/discussions
+  https://github.com/synapseq-foundation/synapseq/discussions
 
 Thank you for contributing and helping maintain a clean, reliable, and well‑structured library of sequences.

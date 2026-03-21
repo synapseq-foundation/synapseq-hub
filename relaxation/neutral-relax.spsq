@@ -1,0 +1,27 @@
+## Title: Neutral Relax
+## Author: Ruan
+## License: CC BY-SA 4.0
+##
+## Neutral Relax is a minimal, low-intensity sequence designed to
+## gently reduce mental arousal and support a calm, stable state. It avoids
+## dramatic transitions and strong modulation, making it suitable for background
+## use during rest, light meditation, or quiet activities.
+
+# Presets
+alpha
+  noise brown effect pan 0.75 intensity 25 amplitude 40
+  tone 250 binaural 10 amplitude 15
+
+theta
+  noise brown effect pan 0.45 intensity 25 amplitude 40
+  tone 250 binaural 5 amplitude 15
+
+# Timeline
+00:00:00 silence
+00:00:15 alpha
+00:05:00 alpha
+00:10:00 theta
+00:15:00 theta
+00:17:30 alpha
+00:19:30 alpha 
+00:20:00 silence
