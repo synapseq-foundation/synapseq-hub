@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to the **SynapSeq Hub**, the official repository of sequences for [SynapSeq](https://github.com/ruanklein/synapseq).
 
-This document describes how to contribute new `.spsq` sequences, `.spsc` preset or option files, and background audio files while ensuring quality, compatibility, and integrity.
+This document describes how to contribute new `.spsq` sequences, `.spsc` preset or option files, and ambiance audio files while ensuring quality, compatibility, and integrity.
 
 ---
 
@@ -10,32 +10,36 @@ This document describes how to contribute new `.spsq` sequences, `.spsc` preset 
 
 Contributions are now organized by category directly at the root of the repository.
 
-Each category has its own directory, and the sequence file lives inside that category directory together with its local dependencies, if any.
+Each category has its own directory for `.spsq` files. Shared dependency types now
+live in dedicated root directories.
 
 ### Directory layout
 
 ```
 <category>/<sequence>.spsq
-<category>/<dependency-file>
+audio/<ambiance-file>.wav
+config/<preset-file>.spsc
 ```
 
 Where:
 
 - **`<category>`** → Sequence category (`focus`, `relaxation`, `meditation`, `sleep`, `creative`, etc.)
 - **`<sequence>`** → File name of your sequence
-- **`<dependency-file>`** → Any local file referenced by the sequence and distributed with it, such as a background `.wav`
+- **`<ambiance-file>`** → Ambiance audio file name stored in the root `audio/` directory
+- **`<preset-file>`** → Preset or options file name stored in the root `config/` directory
 
 ### Examples
 
 ```
 focus/deep-work.spsq
-focus/deep-work.wav
+audio/deep-work-rain.wav
 relaxation/ocean-drift.spsq
-relaxation/ocean-drift.wav
+config/relaxation-presets.spsc
 meditation/quiet-descent.spsq
 ```
 
-Pull Requests that place contribution files outside their category directory may be rejected.
+Use dependency file names that clearly describe the content. For example,
+`relaxation-presets.spsc` is preferred over vague names such as `presets.spsc`.
 
 ---
 
@@ -76,39 +80,51 @@ Brainwave audio **cannot** reproduce the effects of drugs, medications, or chemi
 
 ### 3. Dependency rules
 
-- All dependencies must live inside the same category directory as the main `.spsq` sequence whenever possible
+- `.wav` ambiance files must be stored in the root `audio/` directory
+- `.spsc` preset or options files must be stored in the root `config/` directory
+- Use descriptive file names that match the dependency purpose
+- Inside `.spsq` files, `@ambiance` and `@extends` must always use Hub URLs, not local paths
+- `@ambiance` must always use a URL under `https://hub.synapseq.org/audio/`
+- `@extends` must always use a URL under `https://hub.synapseq.org/config/`
+- These Hub URLs must be written even if the dependency file has not been published yet
 - The `path` and every dependency `download_url` in `manifest.json` must point to the actual repository location of the file
 - Dependency names in `manifest.json` should match the file names being distributed
 - Dependencies with `type: "extends"` must always point to a `.spsc` file
 - Dependencies with `type: "ambiance"` must always point to a `.wav` file compatible with SynapSeq CLI limits: PCM WAV, 8/16/24-bit, up to 20 MB
-- External URLs are not allowed
+- External URLs are not allowed for sequence dependencies; use `hub.synapseq.org` only
 - All referenced local files must exist in the repository
+
+Examples inside `.spsq` files:
+
+```
+@ambiance ocean https://hub.synapseq.org/audio/ocean.wav
+
+@extends https://hub.synapseq.org/config/options.spsc
+```
 
 ### 4. Licensing
 
 - All contributions must be licensed under **CC BY-SA 4.0**
-- `.spsq` header must explicitly state the license
-- Background `.wav` files must include proper attribution in the `.spsq` header
+- Ambiance `.wav` files must include proper attribution in the `.spsq` header
 
-**Note:** Non-Commercial licenses (CC-BY-NC, CC-BY-NC-SA, etc.) are not allowed for background audio, as they are incompatible with the commercial-permissive nature of the Hub and its CC BY-SA 4.0 licensing.
+**Note:** Non-Commercial licenses (CC-BY-NC, CC-BY-NC-SA, etc.) are not allowed for ambiance audio, as they are incompatible with the commercial-permissive nature of the Hub and its CC BY-SA 4.0 licensing.
 
 **You may NOT relicense third‑party audio as CC BY-SA 4.0.**
 
-Examples of valid background audio attribution in `.spsq` files:
+Examples of valid ambiance audio attribution in `.spsq` files:
 
 ```
-## Background: "Ocean Waves" by user example (CC BY 3.0)
+## Ambiance "ocean": "Ocean Waves" by user example (CC BY 3.0)
 ## Source: https://freesound.org/people/example/sounds/12345/
 ```
 
 ```
-## Background: Original field recording by John Doe
-## License: CC BY-SA 4.0
+## Ambiance "field": Original field recording by John Doe (CC BY-SA 4.0)
 ## Source: https://archive.org/details/john-doe-ocean-recording
 ```
 
 ```
-## Background: "Soft Wind" by Alice (CC0 - Public Domain)
+## Ambiance "soft-wind": "Soft Wind" by Alice (CC0 - Public Domain)
 ## Source: https://freesound.org/people/alice/sounds/67890/
 ```
 
@@ -126,8 +142,6 @@ Each `.spsq` file must include a header using `##` comment lines:
 ## It uses clear rhythmic stimulation to promote focus without excess
 ## intensity, making it suitable for work, study, and other
 ## cognitively demanding tasks.
-##
-## License: CC BY-SA 4.0
 ```
 
 Recommended structure:
@@ -136,12 +150,11 @@ Recommended structure:
 - Blank separator line using `##`
 - One or more short description lines using simple, direct language
 - Another blank separator line using `##`
-- A license line such as `## License: CC BY-SA 4.0`
-- Optional background attribution lines when external audio is included
+- Optional ambiance attribution lines when external audio is included
 
 Comment lines in the header should be wrapped at 80 characters when possible.
 
-If the sequence includes background audio, extend the header like this:
+If the sequence includes ambiance audio, extend the header like this:
 
 ```
 ## Deep Focus (20 minutes)
@@ -149,9 +162,7 @@ If the sequence includes background audio, extend the header like this:
 ## Deep Focus is a steady, mid-intensity sequence designed to support
 ## alertness and sustained concentration.
 ##
-## License: CC BY-SA 4.0
-##
-## Background: "Ocean Waves" by freesound.org/user/example (CC BY 3.0)
+## Ambiance "ocean": "Ocean Waves" by freesound.org/user/example (CC BY 3.0)
 ## Source: https://freesound.org/people/example/sounds/12345/
 ```
 
@@ -181,13 +192,13 @@ Each sequence must have a corresponding object inside the `entries` array with t
   "dependencies": [
     {
       "type": "ambiance",
-      "id": "ocean-drift.wav",
-      "download_url": "https://hub.synapseq.org/relaxation/ocean-drift.wav"
+      "id": "ocean-waves-soft",
+      "download_url": "https://hub.synapseq.org/audio/ocean-waves-soft.wav"
     },
     {
       "type": "extends",
-      "id": "base-relax-presets.spsc",
-      "download_url": "https://hub.synapseq.org/relaxation/base-relax-presets.spsc"
+      "id": "relaxation-presets",
+      "download_url": "https://hub.synapseq.org/config/relaxation-presets.spsc"
     }
   ]
 }
@@ -207,7 +218,7 @@ Each sequence must have a corresponding object inside the `entries` array with t
 ### Supported dependency types
 
 - **`extends`** → Additional `.spsc` file used as an extension, preset source, or options source
-- **`ambiance`** → Background audio file in `.wav` format
+- **`ambiance`** → Ambiance audio file in `.wav` format
 
 When your sequence has no dependencies, use an empty array:
 
@@ -222,7 +233,7 @@ When your sequence has no dependencies, use an empty array:
 1. Fork the repository
 2. Clone your fork
 3. Add your `.spsq` file to the correct category directory at the repository root
-4. Add any local dependencies for that sequence in the same category directory
+4. Add `.wav` dependencies to `audio/` and `.spsc` dependencies to `config/`
 5. Update `manifest.json` manually by adding a new object to the `entries` array
 6. Make sure `path`, `download_url`, `updated_at`, and `dependencies` are correct
 7. Validate the JSON formatting before opening your Pull Request
