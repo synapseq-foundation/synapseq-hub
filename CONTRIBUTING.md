@@ -1,6 +1,6 @@
 # Contributing to SynapSeq Hub
 
-Thank you for your interest in contributing to the **SynapSeq Hub**, the official repository of sequences for [SynapSeq](https://github.com/ruanklein/synapseq).
+Thank you for your interest in contributing to the **SynapSeq Hub**, the official repository of sequences for [SynapSeq](https://github.com/synapseq-foundation/synapseq).
 
 This document describes how to contribute new `.spsq` sequences, `.spsc` preset or option files, and ambiance audio files while ensuring quality, compatibility, and integrity.
 
@@ -8,13 +8,12 @@ This document describes how to contribute new `.spsq` sequences, `.spsc` preset 
 
 ## Repository Structure
 
-Contributions are now organized by category directly at the root of the repository.
+Contributions are now organized by category directly at the `static` root directory.
 
 Each category has its own directory for `.spsq` files. Shared dependency types now
-live in dedicated root directories.
+live in dedicated directories.
 
 ### Directory layout
-
 ```
 <category>/<sequence>.spsq
 audio/<ambiance-file>.wav
