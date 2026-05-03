@@ -28,14 +28,19 @@
 	}
 </script>
 
-<div class={['grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3', context === 'player' && 'flex-1']}>
+<div
+	class={[
+		'grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3',
+		context === 'player' && 'flex-1'
+	]}
+>
 	<img src={artworkFor(entry.id)} alt="" class={artworkClass} onerror={useFallback} />
 	<div class="grid min-w-0 gap-0.5">
-		<strong class="overflow-hidden text-ellipsis whitespace-nowrap text-base tracking-[-0.02em]">
+		<strong class="overflow-hidden text-base tracking-[-0.02em] text-ellipsis whitespace-nowrap">
 			{entry.name}
 		</strong>
-		<span class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-[var(--muted)]">
-			{entry.author}
+		<span class="overflow-hidden text-sm text-ellipsis whitespace-nowrap text-[var(--muted)]">
+			{entry.category}
 		</span>
 	</div>
 </div>
