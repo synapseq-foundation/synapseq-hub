@@ -12,7 +12,7 @@
 </script>
 
 <header
-	class="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-3xl border-b border-[var(--line)] bg-white/90 p-3.5 sm:p-[18px] backdrop-blur-sm dark:bg-black/90"
+	class="sticky top-0 z-50 grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-3xl border-b border-[var(--line)] bg-white/90 p-3.5 sm:p-[18px] backdrop-blur-sm dark:bg-black/90"
 >
 	<img
 		src={defaultArtwork}
