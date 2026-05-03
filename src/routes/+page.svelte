@@ -88,7 +88,7 @@
 	}
 
 	function applyTheme(nextTheme: Theme) {
-		document.documentElement.dataset.theme = nextTheme;
+		document.documentElement.classList.toggle('dark', nextTheme === 'dark');
 	}
 
 	function restoreFavorites(audioEntries: AudioEntry[]) {
@@ -231,7 +231,7 @@
 			Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	}
 
-	:global(html[data-theme='dark'] body) {
+	:global(.dark body) {
 		background:
 			radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 26%),
 			radial-gradient(circle at top right, rgba(180, 83, 9, 0.14), transparent 22%),

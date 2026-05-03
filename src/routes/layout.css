@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+@custom-variant dark (&:where(.dark *));
+
 :root {
 	--bg: #f4efe5;
 	--panel: rgba(255, 252, 246, 0.86);
@@ -26,7 +28,7 @@
 	--off: #94a3b8;
 }
 
-html[data-theme='dark'] {
+.dark {
 	color-scheme: dark;
 	--bg: #161311;
 	--panel: rgba(31, 26, 23, 0.82);
