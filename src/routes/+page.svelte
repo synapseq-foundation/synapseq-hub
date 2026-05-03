@@ -4,6 +4,7 @@
 	import AudioPlayerBar from '$lib/components/player/AudioPlayerBar.svelte';
 	import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
 	import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
+	import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
 	import StatePanel from '$lib/components/player/StatePanel.svelte';
 	import { favoritesStorageKey, maxFavorites, themeStorageKey } from '$lib/player/constants';
 	import { getCategoryTheme, type Category } from '$lib/category-themes';
@@ -189,7 +190,7 @@
 	<PlayerHeader {theme} onToggleTheme={toggleTheme} />
 
 	{#if isLoading}
-		<StatePanel message="Loading audio catalog..." />
+		<LoadingScreen />
 	{:else if errorMessage}
 		<StatePanel message={errorMessage} role="alert" />
 	{:else if entries.length === 0}
