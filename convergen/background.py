@@ -7,23 +7,24 @@ from utils import clamp, mix_colors
 
 SYNAPSEQ_BG_TOP = (0.11, 0.09, 0.08)  # #1c1714
 SYNAPSEQ_BG_BOTTOM = (0.086, 0.074, 0.066)  # #161311
-SYNAPSEQ_TEAL = (15 / 255, 118 / 255, 110 / 255)
-SYNAPSEQ_OCHRE = (180 / 255, 83 / 255, 9 / 255)
+SYNAPSEQ_TERRACOTTA = (177 / 255, 77 / 255, 42 / 255)
+SYNAPSEQ_AMBER = (180 / 255, 83 / 255, 9 / 255)
+SYNAPSEQ_UMBER = (127 / 255, 45 / 255, 24 / 255)
 
 BACKGROUND_DYNAMICS = {
-    "delta": {"blobs": 3, "waves": 2, "grain": 18, "alpha": 0.08},
-    "theta": {"blobs": 4, "waves": 3, "grain": 28, "alpha": 0.09},
-    "alpha": {"blobs": 5, "waves": 4, "grain": 36, "alpha": 0.10},
-    "beta": {"blobs": 6, "waves": 5, "grain": 48, "alpha": 0.11},
-    "gamma": {"blobs": 7, "waves": 6, "grain": 64, "alpha": 0.12},
+    "delta": {"blobs": 2, "waves": 1, "grain": 4, "alpha": 0.045},
+    "theta": {"blobs": 2, "waves": 2, "grain": 5, "alpha": 0.050},
+    "alpha": {"blobs": 3, "waves": 2, "grain": 6, "alpha": 0.055},
+    "beta": {"blobs": 3, "waves": 3, "grain": 7, "alpha": 0.060},
+    "gamma": {"blobs": 4, "waves": 3, "grain": 8, "alpha": 0.065},
 }
 
 BACKGROUND_COMPLEXITY = {
-    "delta": 10,
-    "theta": 25,
-    "alpha": 35,
-    "beta": 50,
-    "gamma": 70,
+    "delta": 4,
+    "theta": 6,
+    "alpha": 8,
+    "beta": 10,
+    "gamma": 12,
 }
 
 
@@ -42,14 +43,14 @@ def draw_background(ctx, width, height, color, rng, wave_type):
 
 
 def draw_palette_anchors(ctx, width):
-    grad1 = cairo.RadialGradient(140, 90, 40, 140, 90, 560)
-    grad1.add_color_stop_rgba(0, *SYNAPSEQ_TEAL, 0.14)
+    grad1 = cairo.RadialGradient(150, 90, 40, 150, 90, 620)
+    grad1.add_color_stop_rgba(0, *SYNAPSEQ_TERRACOTTA, 0.055)
     grad1.add_color_stop_rgba(1, 0, 0, 0, 0)
     ctx.set_source(grad1)
     ctx.paint()
 
-    grad2 = cairo.RadialGradient(width - 130, 120, 35, width - 130, 120, 520)
-    grad2.add_color_stop_rgba(0, *SYNAPSEQ_OCHRE, 0.13)
+    grad2 = cairo.RadialGradient(width - 130, 120, 35, width - 130, 120, 580)
+    grad2.add_color_stop_rgba(0, *SYNAPSEQ_AMBER, 0.060)
     grad2.add_color_stop_rgba(1, 0, 0, 0, 0)
     ctx.set_source(grad2)
     ctx.paint()
@@ -58,9 +59,10 @@ def draw_palette_anchors(ctx, width):
 def accent_pool_for(color):
     return [
         color,
-        SYNAPSEQ_TEAL,
-        SYNAPSEQ_OCHRE,
-        mix_colors(color, SYNAPSEQ_OCHRE, 0.35),
+        SYNAPSEQ_TERRACOTTA,
+        SYNAPSEQ_AMBER,
+        SYNAPSEQ_UMBER,
+        mix_colors(color, SYNAPSEQ_AMBER, 0.28),
     ]
 
 
@@ -71,15 +73,15 @@ def draw_accent_blobs(ctx, width, height, color, rng, dynamics):
 
         x = rng.uniform(-width * 0.12, width * 1.12)
         y = rng.uniform(-height * 0.08, height * 0.78)
-        inner = rng.uniform(30, 120)
-        outer = rng.uniform(360, 760)
-        alpha = rng.uniform(dynamics["alpha"] * 0.45, dynamics["alpha"])
+        inner = rng.uniform(120, 220)
+        outer = rng.uniform(620, 920)
+        alpha = rng.uniform(dynamics["alpha"] * 0.35, dynamics["alpha"])
 
         blob = cairo.RadialGradient(x, y, inner, x, y, outer)
         blob.add_color_stop_rgba(
             0, clamp(cr * 1.08), clamp(cg * 1.04), clamp(cb), alpha
         )
-        blob.add_color_stop_rgba(0.42, cr, cg, cb, alpha * 0.35)
+        blob.add_color_stop_rgba(0.48, cr, cg, cb, alpha * 0.20)
         blob.add_color_stop_rgba(1, 0, 0, 0, 0)
         ctx.set_source(blob)
         ctx.paint()
@@ -89,11 +91,11 @@ def draw_background_grain(ctx, width, height, color, rng, dynamics):
     for _ in range(dynamics["grain"]):
         cr, cg, cb = rng.choice(accent_pool_for(color))
         ctx.new_path()
-        ctx.set_source_rgba(cr, cg, cb, rng.uniform(0.008, 0.022))
+        ctx.set_source_rgba(cr, cg, cb, rng.uniform(0.004, 0.010))
         ctx.arc(
             rng.uniform(0, width),
             rng.uniform(0, height),
-            rng.uniform(18, 90),
+            rng.uniform(90, 180),
             0,
             2 * math.pi,
         )
@@ -106,11 +108,11 @@ def draw_particles(ctx, width, height, color, rng, wave_type):
 
     for _ in range(density):
         ctx.new_path()
-        ctx.set_source_rgba(r, g, b, rng.uniform(0.02, 0.06))
+        ctx.set_source_rgba(r, g, b, rng.uniform(0.006, 0.018))
         ctx.arc(
             rng.uniform(0, width),
             rng.uniform(0, height),
-            rng.uniform(0.5, 2.0),
+            rng.uniform(0.35, 1.05),
             0,
             2 * math.pi,
         )
@@ -125,12 +127,12 @@ def draw_background_waves(ctx, width, height, color, rng, wave_type):
         ctx.new_path()
 
         offset = rng.uniform(0, math.tau)
-        scale = rng.uniform(0.045, 0.15)
-        frequency = rng.uniform(5.5, 13.0) + i * 0.35
+        scale = rng.uniform(0.030, 0.085)
+        frequency = rng.uniform(4.5, 9.5) + i * 0.25
         center_y = height * rng.uniform(0.32, 0.68)
 
-        ctx.set_source_rgba(r, g, b, rng.uniform(0.022, 0.055))
-        ctx.set_line_width(rng.uniform(1.0, 3.0))
+        ctx.set_source_rgba(r, g, b, rng.uniform(0.012, 0.030))
+        ctx.set_line_width(rng.uniform(0.8, 1.8))
         ctx.move_to(0, center_y)
 
         for x in range(width):
