@@ -180,37 +180,32 @@
 	/>
 </svelte:head>
 
-<main class="mx-auto min-h-screen w-[min(100%,920px)] px-2.5 pt-3 pb-32 sm:px-4 sm:pt-[22px] sm:pb-[136px]">
-	<section
-		class="overflow-hidden rounded-[26px] border border-[var(--line)] bg-[var(--panel)] shadow-[var(--shadow)] backdrop-blur-xl sm:rounded-[32px]"
-		aria-labelledby="player-title"
-	>
-		<PlayerHeader {theme} onToggleTheme={toggleTheme} />
+<main class="overflow-hidden px-2.5 pt-3 pb-32 sm:px-4 sm:pt-[22px] sm:pb-[136px]" aria-labelledby="player-title">
+	<PlayerHeader {theme} onToggleTheme={toggleTheme} />
 
-		{#if isLoading}
-			<StatePanel message="Loading audio catalog..." />
-		{:else if errorMessage}
-			<StatePanel message={errorMessage} role="alert" />
-		{:else if entries.length === 0}
-			<StatePanel message="No audio entries are available yet." />
-		{:else}
-			<CategoryBadges {categories} {selectedCategory} onSelectCategory={selectCategory} />
+	{#if isLoading}
+		<StatePanel message="Loading audio catalog..." />
+	{:else if errorMessage}
+		<StatePanel message={errorMessage} role="alert" />
+	{:else if entries.length === 0}
+		<StatePanel message="No audio entries are available yet." />
+	{:else}
+		<CategoryBadges {categories} {selectedCategory} onSelectCategory={selectCategory} />
 
-			{#if favoriteMessage}
-				<p class="mt-1 mr-[18px] mb-0 ml-[18px] text-sm text-[var(--warn)]" role="status">
-					{favoriteMessage}
-				</p>
-			{/if}
-
-			<AudioList
-				entries={visibleEntries}
-				{selectedEntry}
-				{isFavorite}
-				onSelectEntry={selectEntry}
-				onToggleFavorite={toggleFavorite}
-			/>
+		{#if favoriteMessage}
+			<p class="mt-1 mr-[18px] mb-0 ml-[18px] text-sm text-[var(--warn)]" role="status">
+				{favoriteMessage}
+			</p>
 		{/if}
-	</section>
+
+		<AudioList
+			entries={visibleEntries}
+			{selectedEntry}
+			{isFavorite}
+			onSelectEntry={selectEntry}
+			onToggleFavorite={toggleFavorite}
+		/>
+	{/if}
 </main>
 
 <AudioPlayerBar {selectedEntry} {playMessage} onPlay={playSelected} />
