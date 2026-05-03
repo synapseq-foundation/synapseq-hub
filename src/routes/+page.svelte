@@ -6,7 +6,7 @@ import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
 import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
 import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
 import StatePanel from '$lib/components/player/StatePanel.svelte';
-import { themeStorageKey } from '$lib/player/constants';
+import { themeStorageKey, categoryStorageKey, currentAudioStorageKey } from '$lib/player/constants';
 import { favoritesStore, addFavorite, removeFavorite, getFavorites } from '$lib/player/favorites';
 import { getCategoryTheme, type Category } from '$lib/category-themes';
 import type { AudioEntry, Manifest, Theme } from '$lib/player/types';
@@ -58,7 +58,10 @@ let selectedEntry = $derived.by(() =>
 
 			const manifest = (await response.json()) as Manifest;
 			entries = Array.isArray(manifest.entries) ? manifest.entries : [];
-			selectedAudioId = entries[0]?.id ?? null;
+			restoreSelectionState();
+			if (!selectedAudioId || !entries.some((e) => e.id === selectedAudioId)) {
+				selectedAudioId = entries[0]?.id ?? null;
+			}
 		} catch {
 			errorMessage = 'Could not load the audio catalog.';
 			entries = [];
@@ -101,10 +104,12 @@ let selectedEntry = $derived.by(() =>
 	function selectEntry(entry: AudioEntry) {
 		selectedAudioId = entry.id;
 		playMessage = '';
+		writeStorage(currentAudioStorageKey, entry.id);
 	}
 
 	function selectCategory(category: string) {
 		selectedCategory = category;
+		writeStorage(categoryStorageKey, category);
 	}
 
 	function playSelected() {
@@ -118,6 +123,19 @@ let selectedEntry = $derived.by(() =>
 			localStorage.setItem(key, value);
 		} catch {
 			// Local persistence is optional; the in-memory player still works.
+		}
+	}
+
+	function restoreSelectionState() {
+		const storedCategory = localStorage.getItem(categoryStorageKey);
+		const storedAudioId = localStorage.getItem(currentAudioStorageKey);
+
+		if (storedCategory && (storedCategory === 'All' || storedCategory === 'Favorites' || entries.some((e) => e.category === storedCategory))) {
+			selectedCategory = storedCategory;
+		}
+
+		if (storedAudioId && entries.some((e) => e.id === storedAudioId)) {
+			selectedAudioId = storedAudioId;
 		}
 	}
 </script>
