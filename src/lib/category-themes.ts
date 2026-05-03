@@ -1,4 +1,4 @@
-export type Category = 'All' | 'Focus' | 'Meditation' | 'Relaxation';
+export type Category = 'All' | 'Favorites' | 'Focus' | 'Meditation' | 'Relaxation';
 
 export type CategoryTheme = {
 	bgClass: string;
@@ -8,6 +8,12 @@ export type CategoryTheme = {
 };
 
 export const categoryThemes: Record<Exclude<Category, 'All'>, CategoryTheme> = {
+	Favorites: {
+		bgClass: 'bg-rose-500/30',
+		bgSubtleClass: 'bg-rose-500/10',
+		borderClass: 'border-rose-500/60',
+		transitionClass: 'transition-colors duration-300 ease-in-out'
+	},
 	Focus: {
 		bgClass: 'bg-teal-500/30',
 		bgSubtleClass: 'bg-teal-500/10',

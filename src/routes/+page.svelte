@@ -1,48 +1,43 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import AudioList from '$lib/components/player/AudioList.svelte';
-	import AudioPlayerBar from '$lib/components/player/AudioPlayerBar.svelte';
-	import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
-	import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
-	import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
-	import StatePanel from '$lib/components/player/StatePanel.svelte';
-	import { favoritesStorageKey, maxFavorites, themeStorageKey } from '$lib/player/constants';
-	import { getCategoryTheme, type Category } from '$lib/category-themes';
-	import type { AudioEntry, FavoriteRecord, Manifest, Theme } from '$lib/player/types';
+import { onMount } from 'svelte';
+import AudioList from '$lib/components/player/AudioList.svelte';
+import AudioPlayerBar from '$lib/components/player/AudioPlayerBar.svelte';
+import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
+import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
+import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
+import StatePanel from '$lib/components/player/StatePanel.svelte';
+import { themeStorageKey } from '$lib/player/constants';
+import { favoritesStore, addFavorite, removeFavorite, getFavorites } from '$lib/player/favorites';
+import { getCategoryTheme, type Category } from '$lib/category-themes';
+import type { AudioEntry, Manifest, Theme } from '$lib/player/types';
 
-	let entries = $state.raw<AudioEntry[]>([]);
-	let selectedCategory = $state('All');
-	let selectedAudioId = $state<string | null>(null);
-	let favorites = $state.raw<FavoriteRecord[]>([]);
-	let theme = $state<Theme>('light');
-	let isLoading = $state(true);
-	let errorMessage = $state('');
-	let favoriteMessage = $state('');
-	let playMessage = $state('');
+let entries = $state.raw<AudioEntry[]>([]);
+let selectedCategory = $state('All');
+let selectedAudioId = $state<string | null>(null);
+let favorites = $derived($favoritesStore);
+let theme = $state<Theme>('light');
+let isLoading = $state(true);
+let errorMessage = $state('');
+let playMessage = $state('');
 
-	let favoriteMap = $derived.by(() => new Map(favorites.map((favorite) => [favorite.id, favorite])));
-	let categories = $derived.by(() => [
-		'All',
-		...Array.from(new Set(entries.map((entry) => entry.category))).sort((a, b) => a.localeCompare(b))
-	]);
-	let sortedEntries = $derived.by(() =>
-		[...entries].sort((a, b) => {
-			const favoriteA = favoriteMap.get(a.id)?.favoritedAt ?? 0;
-			const favoriteB = favoriteMap.get(b.id)?.favoritedAt ?? 0;
-
-			if (favoriteA || favoriteB) return favoriteB - favoriteA;
-
-			return a.name.localeCompare(b.name);
-		})
-	);
-	let visibleEntries = $derived.by(() =>
-		selectedCategory === 'All'
-			? sortedEntries
-			: sortedEntries.filter((entry) => entry.category === selectedCategory)
-	);
-	let selectedEntry = $derived.by(() =>
-		entries.find((entry) => entry.id === selectedAudioId) ?? sortedEntries[0] ?? null
-	);
+let categories = $derived.by(() => [
+	'All',
+	'Favorites',
+	...Array.from(new Set(entries.map((entry) => entry.category))).sort((a, b) => a.localeCompare(b))
+]);
+let visibleEntries = $derived.by(() => {
+	if (selectedCategory === 'All') return [...entries].sort((a, b) => a.name.localeCompare(b.name));
+	if (selectedCategory === 'Favorites') {
+		const favIds = new Set(favorites);
+		return entries.filter((entry) => favIds.has(entry.id));
+	}
+	return entries
+		.filter((entry) => entry.category === selectedCategory)
+		.sort((a, b) => a.name.localeCompare(b.name));
+});
+let selectedEntry = $derived.by(() =>
+	entries.find((entry) => entry.id === selectedAudioId) ?? visibleEntries[0] ?? null
+);
 	let categoryTheme = $derived.by(() => getCategoryTheme(selectedCategory as Category));
 	let categoryBgClass = $derived.by(() => categoryTheme?.bgClass ?? '');
 	let categoryBgSubtleClass = $derived.by(() => categoryTheme?.bgSubtleClass ?? '');
@@ -63,7 +58,6 @@
 
 			const manifest = (await response.json()) as Manifest;
 			entries = Array.isArray(manifest.entries) ? manifest.entries : [];
-			favorites = restoreFavorites(entries);
 			selectedAudioId = entries[0]?.id ?? null;
 		} catch {
 			errorMessage = 'Could not load the audio catalog.';
@@ -76,7 +70,7 @@
 	}
 
 	function restoreTheme() {
-		const storedTheme = readStorage(themeStorageKey);
+		const storedTheme = localStorage.getItem(themeStorageKey);
 		if (storedTheme === 'dark' || storedTheme === 'light') theme = storedTheme;
 
 		applyTheme(theme);
@@ -92,58 +86,16 @@
 		document.documentElement.classList.toggle('dark', nextTheme === 'dark');
 	}
 
-	function restoreFavorites(audioEntries: AudioEntry[]) {
-		const storedFavorites = readStorage(favoritesStorageKey);
-		const validIds = new Set(audioEntries.map((entry) => entry.id));
-
-		try {
-			const parsed = JSON.parse(storedFavorites ?? '[]') as unknown;
-
-			if (!Array.isArray(parsed)) return [];
-
-			return parsed
-				.filter(isFavoriteRecord)
-				.filter((favorite) => validIds.has(favorite.id))
-				.sort((a, b) => b.favoritedAt - a.favoritedAt)
-				.slice(0, maxFavorites);
-		} catch {
-			return [];
-		}
-	}
-
-	function isFavoriteRecord(value: unknown): value is FavoriteRecord {
-		return (
-			typeof value === 'object' &&
-			value !== null &&
-			typeof (value as FavoriteRecord).id === 'string' &&
-			typeof (value as FavoriteRecord).favoritedAt === 'number'
-		);
-	}
-
 	function toggleFavorite(entry: AudioEntry) {
-		favoriteMessage = '';
-
-		if (isFavorite(entry.id)) {
-			favorites = favorites.filter((favorite) => favorite.id !== entry.id);
-			writeFavorites();
-			return;
+		if (favorites.includes(entry.id)) {
+			removeFavorite(entry.id);
+		} else {
+			addFavorite(entry.id);
 		}
-
-		if (favorites.length >= maxFavorites) {
-			favoriteMessage = `You can keep up to ${maxFavorites} favorites.`;
-			return;
-		}
-
-		favorites = [{ id: entry.id, favoritedAt: Date.now() }, ...favorites];
-		writeFavorites();
-	}
-
-	function writeFavorites() {
-		writeStorage(favoritesStorageKey, JSON.stringify(favorites));
 	}
 
 	function isFavorite(id: string) {
-		return favoriteMap.has(id);
+		return favorites.includes(id);
 	}
 
 	function selectEntry(entry: AudioEntry) {
@@ -159,14 +111,6 @@
 		if (!selectedEntry) return;
 
 		playMessage = `${selectedEntry.name} is selected.`;
-	}
-
-	function readStorage(key: string) {
-		try {
-			return localStorage.getItem(key);
-		} catch {
-			return null;
-		}
 	}
 
 	function writeStorage(key: string, value: string) {
@@ -198,21 +142,19 @@
 	{:else}
 		<CategoryBadges {categories} {selectedCategory} onSelectCategory={selectCategory} />
 
-		{#if favoriteMessage}
-			<p class="mt-1 mr-[18px] mb-0 ml-[18px] text-sm text-[var(--warn)]" role="status">
-				{favoriteMessage}
-			</p>
+		{#if selectedCategory === 'Favorites' && visibleEntries.length === 0}
+			<StatePanel message="You haven't favorited any audio yet." />
+		{:else}
+			<AudioList
+				entries={visibleEntries}
+				{selectedEntry}
+				{isFavorite}
+				onSelectEntry={selectEntry}
+				onToggleFavorite={toggleFavorite}
+				categoryBgSubtleClass={categoryBgSubtleClass}
+				categoryBorderClass={categoryBorderClass}
+			/>
 		{/if}
-
-		<AudioList
-			entries={visibleEntries}
-			{selectedEntry}
-			{isFavorite}
-			onSelectEntry={selectEntry}
-			onToggleFavorite={toggleFavorite}
-			categoryBgSubtleClass={categoryBgSubtleClass}
-			categoryBorderClass={categoryBorderClass}
-		/>
 	{/if}
 </main>
 

@@ -16,8 +16,3 @@ export type Manifest = {
 	lastUpdated: string;
 	entries: AudioEntry[];
 };
-
-export type FavoriteRecord = {
-	id: string;
-	favoritedAt: number;
-};
