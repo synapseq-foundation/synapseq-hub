@@ -9,9 +9,19 @@
 		isFavorite: (id: string) => boolean;
 		onSelectEntry: (entry: AudioEntry) => void;
 		onToggleFavorite: (entry: AudioEntry) => void;
+		categoryBgSubtleClass?: string;
+		categoryBorderClass?: string;
 	};
 
-	let { entries, selectedEntry, isFavorite, onSelectEntry, onToggleFavorite }: Props = $props();
+	let {
+		entries,
+		selectedEntry,
+		isFavorite,
+		onSelectEntry,
+		onToggleFavorite,
+		categoryBgSubtleClass = '',
+		categoryBorderClass = ''
+	}: Props = $props();
 </script>
 
 <div class="grid gap-2.5 p-3.5 sm:p-[18px]" aria-label="Available audio entries">
@@ -19,10 +29,12 @@
 		{@const favorite = isFavorite(entry.id)}
 		<article
 			class={[
-				'grid grid-cols-[1fr_auto] items-center gap-3 rounded-3xl border bg-[var(--panel-strong)]',
+				'grid grid-cols-[1fr_auto] items-center gap-3 rounded-3xl border bg-[var(--panel-strong)] transition-colors duration-300 ease-in-out',
 				selectedEntry?.id === entry.id
 					? 'border-[var(--accent)] shadow-[0_0_0_4px_var(--accent-soft)]'
-					: 'border-[var(--line)]'
+					: 'border-[var(--line)]',
+				categoryBgSubtleClass ? [categoryBgSubtleClass, 'bg-[var(--panel-strong)]'] : [],
+				categoryBorderClass ? [categoryBorderClass] : []
 			]}
 		>
 			<button

@@ -6,6 +6,7 @@
 	import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
 	import StatePanel from '$lib/components/player/StatePanel.svelte';
 	import { favoritesStorageKey, maxFavorites, themeStorageKey } from '$lib/player/constants';
+	import { getCategoryTheme, type Category } from '$lib/category-themes';
 	import type { AudioEntry, FavoriteRecord, Manifest, Theme } from '$lib/player/types';
 
 	let entries = $state.raw<AudioEntry[]>([]);
@@ -41,6 +42,10 @@
 	let selectedEntry = $derived.by(() =>
 		entries.find((entry) => entry.id === selectedAudioId) ?? sortedEntries[0] ?? null
 	);
+	let categoryTheme = $derived.by(() => getCategoryTheme(selectedCategory as Category));
+	let categoryBgClass = $derived.by(() => categoryTheme?.bgClass ?? '');
+	let categoryBgSubtleClass = $derived.by(() => categoryTheme?.bgSubtleClass ?? '');
+	let categoryBorderClass = $derived.by(() => categoryTheme?.borderClass ?? '');
 
 	onMount(() => {
 		restoreTheme();
@@ -204,11 +209,13 @@
 			{isFavorite}
 			onSelectEntry={selectEntry}
 			onToggleFavorite={toggleFavorite}
+			categoryBgSubtleClass={categoryBgSubtleClass}
+			categoryBorderClass={categoryBorderClass}
 		/>
 	{/if}
 </main>
 
-<AudioPlayerBar {selectedEntry} {playMessage} onPlay={playSelected} />
+<AudioPlayerBar {selectedEntry} {playMessage} onPlay={playSelected} categoryBgClass={categoryBgClass} />
 
 <style>
 	:global(body) {

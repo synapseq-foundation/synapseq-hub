@@ -7,13 +7,18 @@
 		selectedEntry: AudioEntry | null;
 		playMessage: string;
 		onPlay: () => void;
+		categoryBgClass?: string;
 	};
 
-	let { selectedEntry, playMessage, onPlay }: Props = $props();
+	let { selectedEntry, playMessage, onPlay, categoryBgClass = '' }: Props = $props();
 </script>
 
 <footer
-	class="fixed right-3 bottom-3 left-3 mx-auto flex w-[min(calc(100%_-_24px),920px)] items-center gap-3 rounded-[26px] border border-[var(--line-strong)] bg-[var(--panel-strong)] p-3 shadow-[var(--shadow)] backdrop-blur-3xl max-[620px]:items-stretch max-[620px]:gap-2.5 max-[620px]:rounded-[22px]"
+	class={[
+		'fixed right-3 bottom-3 left-3 mx-auto flex w-[min(calc(100%_-_24px),920px)] items-center gap-3 rounded-[26px] border border-[var(--line-strong)] bg-[var(--panel-strong)] p-3 shadow-[var(--shadow)] backdrop-blur-3xl max-[620px]:items-stretch max-[620px]:gap-2.5 max-[620px]:rounded-[22px]',
+		categoryBgClass,
+		'transition-colors duration-300 ease-in-out'
+	]}
 	aria-label="Audio player"
 >
 	{#if selectedEntry}
