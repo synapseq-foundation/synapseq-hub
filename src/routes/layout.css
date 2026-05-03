@@ -1,2 +1,49 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+
+:root {
+	--bg: #f4efe5;
+	--panel: rgba(255, 252, 246, 0.86);
+	--panel-strong: rgba(255, 250, 241, 0.98);
+	--text: #201a15;
+	--muted: #6b6259;
+	--line: rgba(32, 26, 21, 0.12);
+	--line-strong: rgba(32, 26, 21, 0.18);
+	--shadow: 0 24px 80px rgba(51, 37, 23, 0.16);
+	--accent: #b14d2a;
+	--accent-strong: #7f2d18;
+	--accent-soft: rgba(177, 77, 42, 0.14);
+	--ok: #2f6b45;
+	--warn: #a07126;
+	--danger: #8b2e2e;
+	--pure: #4f46e5;
+	--binaural: #0f766e;
+	--monaural: #1d4ed8;
+	--isochronic: #b45309;
+	--noise: #9a3412;
+	--ambiance: #047857;
+	--silence: #6b7280;
+	--off: #94a3b8;
+}
+
+html[data-theme='dark'] {
+	color-scheme: dark;
+	--bg: #161311;
+	--panel: rgba(31, 26, 23, 0.82);
+	--panel-strong: rgba(38, 32, 28, 0.96);
+	--text: #f3eadf;
+	--muted: #b8aa9a;
+	--line: rgba(243, 234, 223, 0.12);
+	--line-strong: rgba(243, 234, 223, 0.18);
+	--shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+	--accent: #c96a42;
+	--accent-strong: #efb08d;
+	--accent-soft: rgba(201, 106, 66, 0.18);
+	--ok: #58a06a;
+	--warn: #c89a46;
+	--danger: #cc6d6d;
+}
+
+html {
+	background: var(--bg);
+}
