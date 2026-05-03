@@ -6,13 +6,20 @@
 	type Props = {
 		theme: Theme;
 		onToggleTheme: () => void;
+		categoryBorderClass?: string;
+		categoryBgGradientClass?: string;
 	};
 
-	let { theme, onToggleTheme }: Props = $props();
+	let {
+		theme,
+		onToggleTheme,
+		categoryBorderClass = '',
+		categoryBgGradientClass = ''
+	}: Props = $props();
 </script>
 
 <header
-	class="sticky top-0 z-50 grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-3xl border-b border-[var(--line)] bg-white/90 p-3.5 sm:p-[18px] backdrop-blur-sm dark:bg-black/90"
+	class="sticky top-0 z-50 grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-3xl border-b border-[var(--line)] bg-white/90 p-3.5 sm:p-[18px] backdrop-blur-sm transition-colors duration-300 ease-in-out dark:bg-black/90 {categoryBorderClass} {categoryBgGradientClass}"
 >
 	<img
 		src={defaultArtwork}

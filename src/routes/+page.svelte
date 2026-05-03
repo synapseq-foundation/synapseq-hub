@@ -42,6 +42,8 @@ let selectedEntry = $derived.by(() =>
 	let categoryBgClass = $derived.by(() => categoryTheme?.bgClass ?? '');
 	let categoryBgSubtleClass = $derived.by(() => categoryTheme?.bgSubtleClass ?? '');
 	let categoryBorderClass = $derived.by(() => categoryTheme?.borderClass ?? '');
+	let categoryHeaderBorderClass = $derived.by(() => categoryTheme?.headerBorderClass ?? '');
+	let categoryHeaderBgGradientClass = $derived.by(() => categoryTheme?.headerBgGradientClass ?? '');
 
 	onMount(() => {
 		restoreTheme();
@@ -149,7 +151,12 @@ let selectedEntry = $derived.by(() =>
 </svelte:head>
 
 <main class="overflow-hidden px-2.5 pt-3 pb-32 sm:px-4 sm:pt-[22px] sm:pb-[136px]" aria-labelledby="player-title">
-	<PlayerHeader {theme} onToggleTheme={toggleTheme} />
+	<PlayerHeader
+		{theme}
+		onToggleTheme={toggleTheme}
+		categoryBorderClass={categoryHeaderBorderClass}
+		categoryBgGradientClass={categoryHeaderBgGradientClass}
+	/>
 
 	{#if isLoading}
 		<LoadingScreen />
