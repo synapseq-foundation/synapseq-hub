@@ -1,35 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Heart, Moon, Play, Sun } from '@lucide/svelte';
-
-	type Theme = 'light' | 'dark';
-
-	type AudioEntry = {
-		id: string;
-		name: string;
-		author: string;
-		path: string;
-		category: string;
-		download_url: string;
-		updated_at: string;
-		dependencies: string[];
-	};
-
-	type Manifest = {
-		version: string;
-		lastUpdated: string;
-		entries: AudioEntry[];
-	};
-
-	type FavoriteRecord = {
-		id: string;
-		favoritedAt: number;
-	};
-
-	const defaultArtwork = '/artwork/default.webp';
-	const favoritesStorageKey = 'synapseq-hub:favorites';
-	const themeStorageKey = 'synapseq-hub:theme';
-	const maxFavorites = 5;
+	import AudioList from '$lib/components/player/AudioList.svelte';
+	import AudioPlayerBar from '$lib/components/player/AudioPlayerBar.svelte';
+	import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
+	import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
+	import StatePanel from '$lib/components/player/StatePanel.svelte';
+	import { favoritesStorageKey, maxFavorites, themeStorageKey } from '$lib/player/constants';
+	import type { AudioEntry, FavoriteRecord, Manifest, Theme } from '$lib/player/types';
 
 	let entries = $state.raw<AudioEntry[]>([]);
 	let selectedCategory = $state('All');
@@ -178,18 +155,6 @@
 		playMessage = `${selectedEntry.name} is selected.`;
 	}
 
-	function artworkFor(id: string) {
-		return `/artwork/${id}.webp`;
-	}
-
-	function useFallback(event: Event) {
-		const image = event.currentTarget as HTMLImageElement;
-
-		if (image.src.endsWith(defaultArtwork)) return;
-
-		image.src = defaultArtwork;
-	}
-
 	function readStorage(key: string) {
 		try {
 			return localStorage.getItem(key);
@@ -215,91 +180,40 @@
 	/>
 </svelte:head>
 
-{#snippet audioDetails(entry: AudioEntry, context: 'row' | 'player')}
-	<div class="audio-details" data-context={context}>
-		<img src={artworkFor(entry.id)} alt="" class="artwork" onerror={useFallback} />
-		<div class="track-copy">
-			<strong>{entry.name}</strong>
-			<span>{entry.author}</span>
-		</div>
-	</div>
-{/snippet}
-
-<main class="hub-shell">
-	<section class="player-card" aria-labelledby="player-title">
-		<header class="hub-header">
-			<img src={defaultArtwork} alt="SynapSeq" class="logo" />
-			<h1 id="player-title">Hub Player</h1>
-			<button class="icon-button" type="button" onclick={toggleTheme} aria-label="Toggle theme">
-				{#if theme === 'dark'}
-					<Sun size={20} />
-				{:else}
-					<Moon size={20} />
-				{/if}
-			</button>
-		</header>
+<main class="mx-auto min-h-screen w-[min(100%,920px)] px-2.5 pt-3 pb-32 sm:px-4 sm:pt-[22px] sm:pb-[136px]">
+	<section
+		class="overflow-hidden rounded-[26px] border border-[var(--line)] bg-[var(--panel)] shadow-[var(--shadow)] backdrop-blur-xl sm:rounded-[32px]"
+		aria-labelledby="player-title"
+	>
+		<PlayerHeader {theme} onToggleTheme={toggleTheme} />
 
 		{#if isLoading}
-			<div class="state-panel">Loading audio catalog...</div>
+			<StatePanel message="Loading audio catalog..." />
 		{:else if errorMessage}
-			<div class="state-panel" role="alert">{errorMessage}</div>
+			<StatePanel message={errorMessage} role="alert" />
 		{:else if entries.length === 0}
-			<div class="state-panel">No audio entries are available yet.</div>
+			<StatePanel message="No audio entries are available yet." />
 		{:else}
-			<nav class="categories" aria-label="Audio categories">
-				{#each categories as category (category)}
-					<button
-						type="button"
-						class={selectedCategory === category ? 'category-badge active' : 'category-badge'}
-						onclick={() => selectCategory(category)}
-					>
-						{category}
-					</button>
-				{/each}
-			</nav>
+			<CategoryBadges {categories} {selectedCategory} onSelectCategory={selectCategory} />
 
 			{#if favoriteMessage}
-				<p class="notice" role="status">{favoriteMessage}</p>
+				<p class="mt-1 mr-[18px] mb-0 ml-[18px] text-sm text-[var(--warn)]" role="status">
+					{favoriteMessage}
+				</p>
 			{/if}
 
-			<div class="audio-list" aria-label="Available audio entries">
-				{#each visibleEntries as entry (entry.id)}
-					<article class={selectedEntry?.id === entry.id ? 'audio-row selected' : 'audio-row'}>
-						<button type="button" class="details-button" onclick={() => selectEntry(entry)}>
-							{@render audioDetails(entry, 'row')}
-						</button>
-						<button
-							type="button"
-							class={isFavorite(entry.id) ? 'favorite-button active' : 'favorite-button'}
-							onclick={() => toggleFavorite(entry)}
-							aria-label={isFavorite(entry.id) ? `Unfavorite ${entry.name}` : `Favorite ${entry.name}`}
-							aria-pressed={isFavorite(entry.id)}
-						>
-							<Heart size={21} fill={isFavorite(entry.id) ? 'currentColor' : 'none'} />
-						</button>
-					</article>
-				{/each}
-			</div>
+			<AudioList
+				entries={visibleEntries}
+				{selectedEntry}
+				{isFavorite}
+				onSelectEntry={selectEntry}
+				onToggleFavorite={toggleFavorite}
+			/>
 		{/if}
 	</section>
 </main>
 
-<footer class="fixed-player" aria-label="Audio player">
-	{#if selectedEntry}
-		{@render audioDetails(selectedEntry, 'player')}
-		<div class="player-actions">
-			{#if playMessage}
-				<span class="play-message">{playMessage}</span>
-			{/if}
-			<button class="play-button" type="button" onclick={playSelected}>
-				<Play size={20} fill="currentColor" />
-				<span>Play</span>
-			</button>
-		</div>
-	{:else}
-		<p class="empty-player">Select an audio to start.</p>
-	{/if}
-</footer>
+<AudioPlayerBar {selectedEntry} {playMessage} onPlay={playSelected} />
 
 <style>
 	:global(body) {
@@ -324,312 +238,5 @@
 
 	:global(button) {
 		font: inherit;
-	}
-
-	.hub-shell {
-		width: min(100%, 920px);
-		min-height: 100vh;
-		margin: 0 auto;
-		padding: 22px 16px 136px;
-	}
-
-	.player-card {
-		border: 1px solid var(--line);
-		border-radius: 32px;
-		background: var(--panel);
-		box-shadow: var(--shadow);
-		backdrop-filter: blur(20px);
-		overflow: hidden;
-	}
-
-	.hub-header {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		align-items: center;
-		gap: 14px;
-		padding: 18px;
-		border-bottom: 1px solid var(--line);
-	}
-
-	.logo {
-		width: 46px;
-		height: 46px;
-		border: 1px solid var(--line-strong);
-		border-radius: 16px;
-		object-fit: cover;
-	}
-
-	h1 {
-		margin: 0;
-		font-size: clamp(1.35rem, 5vw, 2.1rem);
-		font-weight: 760;
-		letter-spacing: -0.04em;
-	}
-
-	.icon-button,
-	.favorite-button,
-	.play-button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		border: 1px solid var(--line);
-		color: var(--text);
-		background: var(--panel-strong);
-		cursor: pointer;
-		transition:
-			transform 160ms ease,
-			border-color 160ms ease,
-			background 160ms ease;
-	}
-
-	.icon-button:hover,
-	.favorite-button:hover,
-	.play-button:hover {
-		transform: translateY(-1px);
-		border-color: var(--line-strong);
-		background: var(--accent-soft);
-	}
-
-	.icon-button {
-		width: 44px;
-		height: 44px;
-		border-radius: 999px;
-	}
-
-	.state-panel {
-		margin: 18px;
-		padding: 24px;
-		border: 1px solid var(--line);
-		border-radius: 24px;
-		background: var(--panel-strong);
-		color: var(--muted);
-		text-align: center;
-	}
-
-	.categories {
-		display: flex;
-		gap: 10px;
-		overflow-x: auto;
-		padding: 18px 18px 8px;
-		scrollbar-width: none;
-	}
-
-	.categories::-webkit-scrollbar {
-		display: none;
-	}
-
-	.category-badge {
-		flex: 0 0 auto;
-		border: 1px solid var(--line);
-		border-radius: 999px;
-		padding: 9px 15px;
-		color: var(--muted);
-		background: var(--panel-strong);
-		cursor: pointer;
-	}
-
-	.category-badge.active {
-		border-color: transparent;
-		color: var(--accent-strong);
-		background: var(--accent-soft);
-		font-weight: 700;
-	}
-
-	.notice {
-		margin: 4px 18px 0;
-		color: var(--warn);
-		font-size: 0.9rem;
-	}
-
-	.audio-list {
-		display: grid;
-		gap: 10px;
-		padding: 18px;
-	}
-
-	.audio-row {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		align-items: center;
-		gap: 12px;
-		border: 1px solid var(--line);
-		border-radius: 24px;
-		background: var(--panel-strong);
-	}
-
-	.audio-row.selected {
-		border-color: var(--accent);
-		box-shadow: 0 0 0 4px var(--accent-soft);
-	}
-
-	.details-button {
-		min-width: 0;
-		border: 0;
-		padding: 12px;
-		color: inherit;
-		background: transparent;
-		cursor: pointer;
-		text-align: left;
-	}
-
-	.audio-details {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		align-items: center;
-		gap: 12px;
-		min-width: 0;
-	}
-
-	.audio-details[data-context='player'] {
-		flex: 1;
-	}
-
-	.artwork {
-		width: 58px;
-		height: 58px;
-		border: 1px solid var(--line);
-		border-radius: 18px;
-		object-fit: cover;
-		background: var(--accent-soft);
-	}
-
-	.audio-details[data-context='player'] .artwork {
-		width: 50px;
-		height: 50px;
-		border-radius: 16px;
-	}
-
-	.track-copy {
-		display: grid;
-		gap: 2px;
-		min-width: 0;
-	}
-
-	.track-copy strong,
-	.track-copy span {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.track-copy strong {
-		font-size: 1rem;
-		letter-spacing: -0.02em;
-	}
-
-	.track-copy span {
-		color: var(--muted);
-		font-size: 0.9rem;
-	}
-
-	.favorite-button {
-		width: 44px;
-		height: 44px;
-		margin-right: 12px;
-		border-radius: 999px;
-	}
-
-	.favorite-button.active {
-		border-color: transparent;
-		color: var(--accent-strong);
-		background: var(--accent-soft);
-	}
-
-	.fixed-player {
-		position: fixed;
-		right: 12px;
-		bottom: 12px;
-		left: 12px;
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		width: min(calc(100% - 24px), 920px);
-		margin: 0 auto;
-		padding: 12px;
-		border: 1px solid var(--line-strong);
-		border-radius: 26px;
-		background: var(--panel-strong);
-		box-shadow: var(--shadow);
-		backdrop-filter: blur(24px);
-	}
-
-	.player-actions {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		margin-left: auto;
-	}
-
-	.play-message {
-		max-width: 180px;
-		overflow: hidden;
-		color: var(--muted);
-		font-size: 0.85rem;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.play-button {
-		gap: 8px;
-		min-height: 46px;
-		border-color: transparent;
-		border-radius: 999px;
-		padding: 0 18px;
-		color: #fffaf1;
-		background: var(--accent);
-		font-weight: 760;
-	}
-
-	.play-button:hover {
-		background: var(--accent-strong);
-	}
-
-	.empty-player {
-		margin: 0;
-		color: var(--muted);
-	}
-
-	@media (max-width: 620px) {
-		.hub-shell {
-			padding: 12px 10px 128px;
-		}
-
-		.player-card {
-			border-radius: 26px;
-		}
-
-		.hub-header,
-		.audio-list {
-			padding: 14px;
-		}
-
-		.categories {
-			padding: 14px 14px 8px;
-		}
-
-		.fixed-player {
-			align-items: stretch;
-			gap: 10px;
-			border-radius: 22px;
-		}
-
-		.player-actions {
-			flex-direction: column;
-			align-items: flex-end;
-			gap: 6px;
-		}
-
-		.play-message {
-			display: none;
-		}
-
-		.play-button span {
-			display: none;
-		}
-
-		.play-button {
-			width: 48px;
-			padding: 0;
-		}
 	}
 </style>
