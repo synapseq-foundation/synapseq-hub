@@ -43,7 +43,7 @@ def draw_cover(params, title, output, seed=None):
     draw_background(ctx, WIDTH, HEIGHT, color, rng, wave_type)
     draw_background_waves(ctx, WIDTH, HEIGHT, color, rng, wave_type)
     draw_particles(ctx, WIDTH, HEIGHT, color, rng, wave_type)
-    draw_main_waves(ctx, WIDTH, HEIGHT, params, color)
+    draw_main_waves(ctx, WIDTH, HEIGHT, params, color, rng)
     draw_greek_letter(ctx, WIDTH, HEIGHT, wave_type, color)
     draw_title(ctx, title, WIDTH, HEIGHT, color)
     draw_brand(ctx, WIDTH, HEIGHT)
