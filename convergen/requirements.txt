@@ -1,0 +1,4 @@
+# Python 3.14
+numpy==2.4.4
+pillow==12.2.0
+pycairo==1.29.0
