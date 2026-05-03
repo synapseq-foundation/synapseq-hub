@@ -16,6 +16,7 @@ live in dedicated directories.
 ### Directory layout
 ```
 <category>/<sequence>.spsq
+artwork/<entry-id>.webp
 audio/<ambiance-file>.wav
 config/<preset-file>.spsc
 ```
@@ -24,6 +25,7 @@ Where:
 
 - **`<category>`** → Sequence category (`focus`, `relaxation`, `meditation`, `sleep`, `creative`, etc.)
 - **`<sequence>`** → File name of your sequence
+- **`<entry-id>`** → Manifest entry `id`, used as the artwork file name
 - **`<ambiance-file>`** → Ambiance audio file name stored in the root `audio/` directory
 - **`<preset-file>`** → Preset or options file name stored in the root `config/` directory
 
@@ -31,6 +33,7 @@ Where:
 
 ```
 focus/deep-work.spsq
+artwork/deep-work.webp
 audio/deep-work-rain.wav
 relaxation/ocean-drift.spsq
 config/relaxation-presets.spsc
@@ -70,11 +73,13 @@ Brainwave audio **cannot** reproduce the effects of drugs, medications, or chemi
 
 - `.spsq` → Sequence file (UTF‑8)
 - `.spsc` → Preset or options configuration file (UTF‑8)
+- `.webp` → Sequence artwork generated with `convergen`
 - `.wav` → Optional ambiance audio (PCM WAV, 8/16/24‑bit, stereo)
 
 ### 2. Size limits
 
 - `.spsq` files: **max 32 KB**
+- `.webp` artwork files: **max 1 MB**
 - `.wav` ambiance files: **max 20 MB**
 
 ### 3. Dependency rules
@@ -101,7 +106,31 @@ Examples inside `.spsq` files:
 @extends https://hub.synapseq.org/config/options.spsc
 ```
 
-### 4. Licensing
+### 4. Artwork
+
+Every new sequence should include generated artwork in `artwork/<id>.webp`, where
+`<id>` is the same stable identifier used by the entry in `manifest.json`.
+
+Use the `convergen` helper to generate the artwork:
+
+```sh
+cd convergen
+.venv/bin/python main.py --preset alpha --name "Deep Focus" --output ../artwork/deep-focus.webp
+```
+
+Choose the `--preset` that best matches the sequence's dominant brainwave style:
+
+- `delta`
+- `theta`
+- `alpha`
+- `beta`
+- `gamma`
+
+The generated file must be committed with the Pull Request. The Hub player looks
+for artwork at `/artwork/{id}.webp` and falls back to `/artwork/default.webp`
+when entry-specific artwork is missing.
+
+### 5. Licensing
 
 - All contributions must be licensed under **CC BY-SA 4.0**
 - Ambiance `.wav` files must include proper attribution in the `.spsq` header
@@ -233,11 +262,12 @@ When your sequence has no dependencies, use an empty array:
 2. Clone your fork
 3. Add your `.spsq` file to the correct category directory at the repository root
 4. Add `.wav` dependencies to `audio/` and `.spsc` dependencies to `config/`
-5. Update `manifest.json` manually by adding a new object to the `entries` array
-6. Make sure `path`, `download_url`, `updated_at`, and `dependencies` are correct
-7. Validate the JSON formatting before opening your Pull Request
-8. Commit and push
-9. Open a Pull Request
+5. Generate artwork with `convergen` and add it to `artwork/<id>.webp`
+6. Update `manifest.json` manually by adding a new object to the `entries` array
+7. Make sure `path`, `download_url`, `updated_at`, and `dependencies` are correct
+8. Validate the JSON formatting before opening your Pull Request
+9. Commit and push
+10. Open a Pull Request
 
 ---
 
