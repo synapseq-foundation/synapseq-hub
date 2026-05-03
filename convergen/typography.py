@@ -1,15 +1,14 @@
 # typography.py
 
 import cairo
-
 from utils import mix_colors
 
 LETTER_MAP = {
-    "delta": "Δ",
-    "theta": "Θ",
-    "alpha": "Α",
-    "beta": "Β",
-    "gamma": "Γ",
+    "delta": "δ",
+    "theta": "θ",
+    "alpha": "α",
+    "beta": "β",
+    "gamma": "γ",
 }
 
 
