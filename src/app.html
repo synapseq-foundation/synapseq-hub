@@ -2,13 +2,36 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="text-scale" content="scale" />
+		<!-- Prevent zoom on iOS/Android — native app behaviour -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+
+		<!-- PWA / native-app meta -->
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="Hub Player" />
+		<meta name="application-name" content="Hub Player" />
+		<meta name="theme-color" content="#f4efe5" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#161311" media="(prefers-color-scheme: dark)" />
+
+		<!-- Anti-FOUC: apply dark class before first paint -->
 		<script>
 			(function () {
 				const key = 'synapseq-hub:theme';
 				const stored = localStorage.getItem(key);
 				if (stored === 'dark') document.documentElement.classList.add('dark');
+
+				// Sync theme-color meta with stored preference
+				const metas = document.querySelectorAll('meta[name="theme-color"]');
+				if (stored === 'dark') {
+					metas.forEach(function(m) {
+						if (m.media && m.media.includes('light')) m.remove();
+					});
+				} else if (stored === 'light') {
+					metas.forEach(function(m) {
+						if (m.media && m.media.includes('dark')) m.remove();
+					});
+				}
 			})();
 		</script>
 		%sveltekit.head%

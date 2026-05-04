@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import './layout.css';
 
 	import favicon32 from '$lib/assets/favicon-32.png';
@@ -9,6 +10,14 @@
 	import faviconIco from '$lib/assets/favicon.ico';
 
 	let { children } = $props();
+
+	onMount(() => {
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch((err) => {
+				console.warn('SW registration failed:', err);
+			});
+		}
+	});
 </script>
 
 <svelte:head>
@@ -18,5 +27,7 @@
 	<link rel="icon" href={favicon96} sizes="96x96" type="image/png" />
 	<link rel="apple-touch-icon" href={favicon144} sizes="144x144" />
 	<link rel="apple-touch-icon" href={favicon192} sizes="192x192" />
+	<link rel="manifest" href="/pwa.webmanifest" />
 </svelte:head>
+
 {@render children()}

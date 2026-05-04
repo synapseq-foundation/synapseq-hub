@@ -1,0 +1,27 @@
+{
+  "name": "SynapSeq Hub Player",
+  "short_name": "Hub Player",
+  "description": "Browse and play SynapSeq audio packages from the hub catalog.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4efe5",
+  "theme_color": "#161311",
+  "lang": "en",
+  "categories": ["music", "health", "lifestyle"],
+  "icons": [
+    {
+      "src": "/artwork/default.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "/artwork/default.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}
