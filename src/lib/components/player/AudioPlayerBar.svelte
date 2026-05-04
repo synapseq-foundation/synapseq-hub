@@ -21,22 +21,24 @@
 <footer
 	class={[
 		'fixed left-3 right-3 mx-auto flex w-[min(calc(100%-24px),920px)] items-center gap-3 overflow-hidden rounded-[24px] border border-[var(--line-strong)] bg-[var(--panel-strong)] shadow-[0_8px_32px_rgba(0,0,0,0.14),0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-3xl transition-all duration-300 sm:rounded-[28px]',
-		isPlaying ? 'p-2.5 pr-3 sm:p-3 sm:pr-4' : ['p-2.5 pr-3 sm:p-3 sm:pr-4', playerBgClass]
+		isPlaying || isPaused ? 'p-2.5 pr-3 sm:p-3 sm:pr-4' : ['p-2.5 pr-3 sm:p-3 sm:pr-4', playerBgClass]
 	]}
 	style="bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px))"
 	aria-label="Audio player"
 >
-	<!-- Progress fill -->
-	{#if isPlaying}
+	<!-- Progress fill — visible while playing or paused -->
+	{#if isPlaying || isPaused}
 		<div
-			class={['absolute top-0 left-0 h-full transition-[width] duration-300 ease-linear opacity-90', playerBgClass]}
+			class={['absolute top-0 left-0 h-full transition-[width] duration-300 ease-linear opacity-90', isPaused ? 'opacity-50' : 'opacity-90', playerBgClass]}
 			style="width: {progress}%"
 		></div>
-		<!-- Subtle shimmer at progress edge -->
-		<div
-			class="absolute top-0 h-full w-6 bg-gradient-to-r from-transparent to-white/10 transition-[left] duration-300 ease-linear"
-			style="left: calc({progress}% - 24px)"
-		></div>
+		<!-- Shimmer at progress edge — only while actively playing -->
+		{#if isPlaying}
+			<div
+				class="absolute top-0 h-full w-6 bg-gradient-to-r from-transparent to-white/10 transition-[left] duration-300 ease-linear"
+				style="left: calc({progress}% - 24px)"
+			></div>
+		{/if}
 	{/if}
 
 	{#if selectedEntry}
