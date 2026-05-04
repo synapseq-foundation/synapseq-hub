@@ -4,7 +4,7 @@
 	import CollapsibleText from "./CollapsibleText.svelte";
 	import { getAudioDescription } from "../utils/spsq-parser.js";
 	import { getCategoryTheme } from '../category-themes.js';
-	import { Check } from '@lucide/svelte';
+	import { Check, X } from '@lucide/svelte';
 
 	let {
 		show = false,
@@ -116,27 +116,14 @@
 			class="relative mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border-2 p-6 pt-16"
 			style="background: var(--panel-strong); box-shadow: var(--shadow); border-color: {getCategoryBorderColor()};"
 		>
-			<button
-				class="absolute top-4 left-4 cursor-pointer hover:opacity-80"
-				style="color: var(--muted);"
-				onclick={handleClose}
-				aria-label="Close modal"
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-6 w-6"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M6 18L18 6M6 6l12 12"
-					/>
-				</svg>
-			</button>
+		<button
+			class="absolute top-4 left-4 hover:opacity-80 cursor-pointer"
+			style="color: var(--muted);"
+			onclick={handleClose}
+			aria-label="Close modal"
+		>
+			<X size={24} />
+		</button>
 
 			<div
 				class="pointer-events-none absolute inset-0 rounded-2xl"
