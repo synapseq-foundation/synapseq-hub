@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { AudioEntry } from '../player/types.js';
 	import type { Category } from '../category-themes.js';
-	import CollapsibleText from "./CollapsibleText.svelte";
-	import { getAudioDescription } from "../utils/spsq-parser.js";
+	import { getAudioDescription } from '../utils/spsq-parser.js';
 	import { getCategoryTheme } from '../category-themes.js';
-	import { Check, X } from '@lucide/svelte';
+	import { X } from '@lucide/svelte';
+	import { defaultArtwork } from '../player/constants.js';
 
 	let {
 		show = false,
@@ -18,23 +18,44 @@
 
 	let description = $state<string[]>([]);
 	let loading = $state(false);
+	let imgError = $state(false);
+
 	let categoryTheme = $derived(audio ? getCategoryTheme(audio.category as Category) : null);
+
+	// RGB values per category color name, for inline gradient usage
+	const categoryRgb: Record<string, string> = {
+		rose: '244, 63, 94',
+		teal: '20, 184, 166',
+		amber: '245, 158, 11',
+		neutral: '115, 115, 115'
+	};
+
+	let categoryColorName = $derived.by(() => {
+		if (!categoryTheme) return null;
+		const m = categoryTheme.bgSubtleClass.match(/bg-(\w+)-500/);
+		return m ? m[1] : null;
+	});
+
+	let categoryRgbValue = $derived(
+		categoryColorName ? (categoryRgb[categoryColorName] ?? null) : null
+	);
 
 	$effect(() => {
 		if (show && audio?.path) {
 			loading = true;
+			imgError = false;
 			getAudioDescription(audio.path)
 				.then((lines) => {
 					description = lines;
 					loading = false;
 				})
-				.catch((err) => {
-					console.error('Error fetching description:', err);
+				.catch(() => {
 					description = [];
 					loading = false;
 				});
 		} else {
 			description = [];
+			imgError = false;
 		}
 	});
 
@@ -42,127 +63,134 @@
 		if (onclose) onclose();
 	}
 
-	function handlePlay() {
-		if (onclose) onclose();
-	}
-
 	function handleOverlayClick(e: MouseEvent) {
-		if (e.target === e.currentTarget && onclose) onclose();
+		if (e.target === e.currentTarget) handleClose();
 	}
 
 	function handleOverlayKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') handleClose();
 	}
 
-	function getCategoryBorderColor(): string {
-		if (!categoryTheme) return 'var(--line-strong)';
-
-		const borderMatch = categoryTheme.borderClass.match(/border-(\w+)-500\/(\d+)/);
-		if (!borderMatch) return 'var(--line-strong)';
-
-		const colorMap: Record<string, string> = {
-			rose: '244, 63, 94',
-			teal: '20, 184, 166',
-			amber: '245, 158, 11',
-			neutral: '115, 115, 115'
-		};
-
-		const color = colorMap[borderMatch[1]];
-		const opacity = parseInt(borderMatch[2]) / 100;
-
-		if (color) {
-			return `rgba(${color}, ${opacity})`;
-		}
-
-		return 'var(--line-strong)';
-	}
-
-	function getCategoryBgColor(): string {
-		if (!categoryTheme) return 'rgba(255, 250, 241, 0.98)';
-
-		const bgMatch = categoryTheme.bgSubtleClass.match(/bg-(\w+)-500\/(\d+)/);
-		if (!bgMatch) return 'rgba(255, 250, 241, 0.98)';
-
-		const colorMap: Record<string, string> = {
-			rose: '244, 63, 94',
-			teal: '20, 184, 166',
-			amber: '245, 158, 11',
-			neutral: '115, 115, 115'
-		};
-
-		const color = colorMap[bgMatch[1]];
-		const opacity = parseInt(bgMatch[2]) / 100;
-
-		if (color) {
-			return `rgba(${color}, ${opacity})`;
-		}
-
-		return 'rgba(255, 250, 241, 0.98)';
+	function useFallback(event: Event) {
+		imgError = true;
+		const img = event.currentTarget as HTMLImageElement;
+		if (!img.src.endsWith(defaultArtwork)) img.src = defaultArtwork;
 	}
 </script>
 
 {#if show && audio}
+	<!-- Overlay -->
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)]"
+		class="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
 		role="dialog"
 		aria-modal="true"
+		aria-label={audio.name}
 		tabindex="-1"
 		onclick={handleOverlayClick}
 		onkeydown={handleOverlayKeydown}
 	>
+		<!-- Backdrop -->
+		<div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+		<!-- Sheet / Card -->
 		<div
-			class="relative mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border-2 p-6 pt-16"
-			style="background: var(--panel-strong); box-shadow: var(--shadow); border-color: {getCategoryBorderColor()};"
+			class="relative z-10 w-full overflow-hidden rounded-t-[28px] border border-[var(--line)] bg-[var(--panel-strong)] shadow-[0_-8px_48px_rgba(0,0,0,0.22)] sm:mx-4 sm:max-w-sm sm:rounded-[28px] sm:shadow-[var(--shadow)]"
 		>
-		<button
-			class="absolute top-4 left-4 hover:opacity-80 cursor-pointer"
-			style="color: var(--muted);"
-			onclick={handleClose}
-			aria-label="Close modal"
-		>
-			<X size={24} />
-		</button>
+			<!-- Category color wash at top -->
+			{#if categoryRgbValue}
+				<div
+					class="pointer-events-none absolute inset-x-0 top-0 h-48 rounded-t-[28px]"
+					style="background: linear-gradient(180deg, rgba({categoryRgbValue}, 0.18) 0%, transparent 100%);"
+				></div>
+			{/if}
 
-			<div
-				class="pointer-events-none absolute inset-0 rounded-2xl"
-				style="background: {getCategoryBgColor()};"
-			></div>
+			<!-- Drag handle (mobile) -->
+			<div class="flex justify-center pb-1 pt-3 sm:hidden">
+				<div class="h-1 w-10 rounded-full bg-[var(--line-strong)]"></div>
+			</div>
 
-			<div class="relative z-10">
-				<div class="flex flex-col items-center">
-					{#if audio.artwork}
+			<!-- Close button -->
+			<button
+				class="absolute right-4 top-4 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-strong)] text-[var(--muted)] transition-all duration-150 hover:border-[var(--line-strong)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-90"
+				onclick={handleClose}
+				aria-label="Close"
+			>
+				<X size={16} />
+			</button>
+
+			<!-- Content -->
+			<div class="px-5 pb-8 pt-4 sm:px-6 sm:pb-8 sm:pt-5">
+				<!-- Artwork + meta -->
+				<div class="flex items-start gap-4">
+					<!-- Artwork -->
+					<div class="relative shrink-0">
+						{#if categoryRgbValue}
+							<div
+								class="absolute inset-0 rounded-2xl blur-[14px]"
+								style="background: rgba({categoryRgbValue}, 0.35);"
+							></div>
+						{/if}
 						<img
 							src={audio.artwork}
-							alt="Audio artwork"
-							class="mb-4 h-48 w-48 rounded-lg object-cover"
+							alt=""
+							class="relative h-[88px] w-[88px] rounded-2xl border border-[var(--line-strong)] object-cover shadow-md sm:h-24 sm:w-24"
+							onerror={useFallback}
 						/>
-					{/if}
+					</div>
 
-					<!-- {#if audio.author}
-						<p class="text-sm mb-3" style="color: var(--muted);">created by {audio.author}</p>
-					{/if} -->
-
-					{#if loading}
-						<p class="text-sm" style="color: var(--muted);">Loading description...</p>
-					{:else if description.length > 0}
-						<div class="w-full rounded-lg p-4 mb-6" style="background: var(--panel); max-height: 350px; overflow-y: auto;">
-							<CollapsibleText text={description.join("\n")} />
-						</div>
-					{/if}
+					<!-- Name, category, author -->
+					<div class="grid min-w-0 flex-1 gap-1 pt-1">
+						<h2 class="m-0 text-[1.05rem] font-[740] leading-snug tracking-[-0.03em] text-[var(--text)] sm:text-[1.1rem]">
+							{audio.name}
+						</h2>
+						{#if categoryRgbValue}
+							<span
+								class="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-[0.7rem] font-[600] uppercase tracking-[0.1em]"
+								style="background: rgba({categoryRgbValue}, 0.15); color: rgba({categoryRgbValue}, 1);"
+							>
+								{audio.category}
+							</span>
+						{:else}
+							<span class="text-[0.75rem] font-[500] uppercase tracking-[0.1em] text-[var(--muted)]">
+								{audio.category}
+							</span>
+						{/if}
+						{#if audio.author}
+							<span class="mt-0.5 truncate text-[0.8rem] text-[var(--muted)]">
+								by {audio.author}
+							</span>
+						{/if}
+					</div>
 				</div>
 
-			<div class="flex gap-3">
-				<button
-					class="flex-1 py-3 px-4 rounded-lg cursor-pointer font-semibold inline-flex items-center justify-center gap-2"
-					style="background: var(--accent); color: white;"
-					onmouseenter={(e) => e.currentTarget.style.background = 'var(--accent-strong)'}
-					onmouseleave={(e) => e.currentTarget.style.background = 'var(--accent)'}
-					onclick={handleClose}
-				>
-					<Check size={18} />
-					Ok
-				</button>
-			</div>
+				<!-- Divider -->
+				<div class="my-5 h-px bg-[var(--line)]"></div>
+
+				<!-- Description -->
+				{#if loading}
+					<div class="flex items-center gap-2.5 py-4">
+						<div class="h-2 flex-1 animate-pulse rounded-full bg-[var(--line-strong)]"></div>
+						<div class="h-2 w-2/3 animate-pulse rounded-full bg-[var(--line-strong)]"></div>
+					</div>
+				{:else if description.length > 0}
+					<div class="scrollbar-none max-h-[180px] overflow-y-auto sm:max-h-[220px]">
+						<p class="m-0 whitespace-pre-wrap text-[0.88rem] leading-relaxed text-[var(--muted)] sm:text-[0.9rem]">
+							{description.join('\n')}
+						</p>
+					</div>
+				{:else}
+					<p class="m-0 text-[0.85rem] text-[var(--muted)] italic">No description available.</p>
+				{/if}
+
+				<!-- Footer button -->
+				<div class="mt-6">
+					<button
+						class="w-full cursor-pointer rounded-2xl border border-transparent bg-[var(--accent)] py-3 text-[0.92rem] font-[660] text-[#fffaf1] shadow-[0_2px_12px_rgba(177,77,42,0.35)] transition-all duration-150 hover:-translate-y-px hover:bg-[var(--accent-strong)] hover:shadow-[0_4px_16px_rgba(177,77,42,0.45)] active:scale-[0.98]"
+						onclick={handleClose}
+					>
+						Got it
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
