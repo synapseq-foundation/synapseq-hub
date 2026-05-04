@@ -25,9 +25,12 @@
 	let errorMessage = $state('');
 	let playMessage = $state('');
 	let isPlaying = $state(false);
-	let playerLocked = $state(false);
+	let isPaused = $state(false);
+	// List is locked for the entire session (playing OR paused).
+	// It only unlocks when the audio ends naturally or the user hits Stop.
+	let playerLocked = $derived(isPlaying || isPaused);
 	let playbackProgress = $state(0);
-	let audioElement: Audio | null = null;
+	let audioElement: HTMLAudioElement | null = null;
 	let wakeLock: WakeLockSentinel | null = null;
 
 	async function acquireWakeLock() {
@@ -191,6 +194,12 @@
 	function startPlayback() {
 		if (!selectedEntry || isPlaying) return;
 
+		// If resuming from pause, just unpause the existing element.
+		if (isPaused && audioElement) {
+			resumePlayback();
+			return;
+		}
+
 		const audio = new Audio(`https://audio.synapseq.org/hub/${selectedEntry.id}.mp3`);
 		audio.addEventListener('timeupdate', () => {
 			if (audio.duration) {
@@ -203,7 +212,7 @@
 		audio.play();
 		audioElement = audio;
 		isPlaying = true;
-		playerLocked = true;
+		isPaused = false;
 		void acquireWakeLock();
 
 		if ('mediaSession' in navigator) {
@@ -216,9 +225,33 @@
 				]
 			});
 			navigator.mediaSession.playbackState = 'playing';
-			navigator.mediaSession.setActionHandler('play', () => startPlayback());
-			navigator.mediaSession.setActionHandler('pause', () => systemPause());
+			navigator.mediaSession.setActionHandler('play', () => resumePlayback());
+			navigator.mediaSession.setActionHandler('pause', () => pausePlayback());
 			navigator.mediaSession.setActionHandler('stop', () => destroyPlayback());
+		}
+	}
+
+	function pausePlayback() {
+		if (!audioElement || !isPlaying) return;
+		audioElement.pause();
+		isPlaying = false;
+		isPaused = true;
+		void releaseWakeLock();
+
+		if ('mediaSession' in navigator) {
+			navigator.mediaSession.playbackState = 'paused';
+		}
+	}
+
+	function resumePlayback() {
+		if (!audioElement || !isPaused) return;
+		audioElement.play();
+		isPlaying = true;
+		isPaused = false;
+		void acquireWakeLock();
+
+		if ('mediaSession' in navigator) {
+			navigator.mediaSession.playbackState = 'playing';
 		}
 	}
 
@@ -228,7 +261,7 @@
 		audioElement.currentTime = 0;
 		audioElement = null;
 		isPlaying = false;
-		playerLocked = false;
+		isPaused = false;
 		playbackProgress = 0;
 		void releaseWakeLock();
 
@@ -241,21 +274,11 @@
 		}
 	}
 
-	// Called by the Media Session API (system tray, keyboard key).
-	// Treats pause as a full stop but captures the current progress
-	// before resetting, so the bar shows where it was interrupted.
-	function systemPause() {
-		if (!audioElement || !isPlaying) return;
-		const snapshot = audioElement.duration
-			? (audioElement.currentTime / audioElement.duration) * 100
-			: playbackProgress;
-		destroyPlayback();
-		playbackProgress = snapshot;
-	}
-
-	function togglePlayback() {
+	function togglePlayPause() {
 		if (isPlaying) {
-			destroyPlayback();
+			pausePlayback();
+		} else if (isPaused) {
+			resumePlayback();
 		} else {
 			startPlayback();
 		}
@@ -319,9 +342,11 @@
 	{selectedEntry}
 	{playMessage}
 	{isPlaying}
+	{isPaused}
 	progress={playbackProgress}
 	locked={playerLocked}
-	onToggle={togglePlayback}
+	onPlayPause={togglePlayPause}
+	onStop={destroyPlayback}
 	{playerBgClass}
 />
 

@@ -1,19 +1,21 @@
 <script lang="ts">
-	import { Play, Square } from '@lucide/svelte';
 	import AudioDetails from './AudioDetails.svelte';
+	import PlayerControls from './PlayerControls.svelte';
 	import type { AudioEntry } from '$lib/player/types';
 
 	type Props = {
 		selectedEntry: AudioEntry | null;
 		playMessage: string;
 		isPlaying: boolean;
+		isPaused: boolean;
 		progress: number;
 		locked: boolean;
-		onToggle: () => void;
+		onPlayPause: () => void;
+		onStop: () => void;
 		playerBgClass?: string;
 	};
 
-	let { selectedEntry, playMessage, isPlaying, progress, locked, onToggle, playerBgClass = '' }: Props = $props();
+	let { selectedEntry, playMessage, isPlaying, isPaused, progress, locked, onPlayPause, onStop, playerBgClass = '' }: Props = $props();
 </script>
 
 <footer
@@ -42,26 +44,13 @@
 			<AudioDetails entry={selectedEntry} context="player" />
 
 			<div class="ml-auto flex shrink-0 items-center gap-2 sm:gap-2.5">
-				{#if playMessage && !isPlaying}
+				{#if playMessage && !isPlaying && !isPaused}
 					<span class="hidden max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap text-[0.8rem] text-[var(--muted)] sm:block">
 						{playMessage}
 					</span>
 				{/if}
 
-				<!-- Play/Stop button -->
-				<button
-					class="relative z-10 inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border border-transparent bg-[var(--accent)] text-[#fffaf1] shadow-[0_2px_12px_rgba(177,77,42,0.4)] transition-all duration-150 hover:-translate-y-px hover:bg-[var(--accent-strong)] hover:shadow-[0_4px_16px_rgba(177,77,42,0.5)] active:scale-95 sm:h-12 sm:w-auto sm:min-w-[100px] sm:rounded-full sm:px-5"
-					type="button"
-					onclick={onToggle}
-				>
-					{#if isPlaying}
-						<Square size={18} fill="currentColor" />
-						<span class="hidden text-[0.85rem] font-[660] sm:block">Stop</span>
-					{:else}
-						<Play size={18} fill="currentColor" />
-						<span class="hidden text-[0.85rem] font-[660] sm:block">Play</span>
-					{/if}
-				</button>
+				<PlayerControls {isPlaying} {isPaused} {onPlayPause} {onStop} />
 			</div>
 		</div>
 	{:else}
