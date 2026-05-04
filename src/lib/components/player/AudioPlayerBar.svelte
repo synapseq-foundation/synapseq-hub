@@ -10,22 +10,22 @@
 		progress: number;
 		locked: boolean;
 		onToggle: () => void;
-		categoryBgClass?: string;
+		playerBgClass?: string;
 	};
 
-	let { selectedEntry, playMessage, isPlaying, progress, locked, onToggle, categoryBgClass = '' }: Props = $props();
+	let { selectedEntry, playMessage, isPlaying, progress, locked, onToggle, playerBgClass = '' }: Props = $props();
 </script>
 
 <footer
 	class={[
 		'fixed right-3 bottom-3 left-3 mx-auto flex w-[min(calc(100%_-_24px),920px)] items-center gap-3 rounded-[26px] border border-[var(--line-strong)] bg-[var(--panel-strong)] p-3 shadow-[var(--shadow)] backdrop-blur-3xl max-[620px]:items-stretch max-[620px]:gap-2.5 max-[620px]:rounded-[22px]',
-		isPlaying ? 'overflow-hidden bg-transparent' : [categoryBgClass, 'transition-colors duration-300 ease-in-out']
+		isPlaying ? 'overflow-hidden bg-transparent' : [playerBgClass, 'transition-colors duration-300 ease-in-out']
 	]}
 	aria-label="Audio player"
 >
-	{#if isPlaying}
-		<div class={['absolute top-0 left-0 h-full transition-[width] duration-300 ease-linear', categoryBgClass]} style="width: {progress}%"></div>
-	{/if}
+{#if isPlaying}
+	<div class={['absolute top-0 left-0 h-full transition-[width] duration-300 ease-linear', playerBgClass]} style="width: {progress}%"></div>
+{/if}
 	{#if selectedEntry}
 		<div class="relative z-10 flex w-full items-center gap-3">
 			<AudioDetails entry={selectedEntry} context="player" />

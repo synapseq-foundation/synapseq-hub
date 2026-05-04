@@ -62,11 +62,16 @@ function closeModal() {
 }
 
 	let categoryTheme = $derived.by(() => getCategoryTheme(selectedCategory as Category));
-	let categoryBgClass = $derived.by(() => categoryTheme?.bgClass ?? '');
 	let categoryBgSubtleClass = $derived.by(() => categoryTheme?.bgSubtleClass ?? '');
 	let categoryBorderClass = $derived.by(() => categoryTheme?.borderClass ?? '');
 	let categoryHeaderBorderClass = $derived.by(() => categoryTheme?.headerBorderClass ?? '');
 	let categoryHeaderBgGradientClass = $derived.by(() => categoryTheme?.headerBgGradientClass ?? '');
+
+	let playerTheme = $derived.by(() => {
+		if (!selectedEntry) return null;
+		return getCategoryTheme(selectedEntry.category as Category);
+	});
+	let playerBgClass = $derived.by(() => playerTheme?.bgClass ?? '');
 
 	onMount(() => {
 		restoreTheme();
@@ -259,7 +264,7 @@ function closeModal() {
 	{/if}
 </main>
 
-<AudioPlayerBar {selectedEntry} {playMessage} {isPlaying} progress={playbackProgress} locked={playerLocked} onToggle={togglePlayback} categoryBgClass={categoryBgClass} />
+<AudioPlayerBar {selectedEntry} {playMessage} {isPlaying} progress={playbackProgress} locked={playerLocked} onToggle={togglePlayback} playerBgClass={playerBgClass} />
 
 <AudioPlaybackModal show={modalShow} audio={modalAudio} onclose={closeModal} />
 
