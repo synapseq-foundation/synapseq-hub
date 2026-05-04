@@ -1,65 +1,91 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-import AudioList from '$lib/components/player/AudioList.svelte';
-import AudioPlayerBar from '$lib/components/player/AudioPlayerBar.svelte';
-import AudioPlaybackModal from '$lib/components/AudioPlaybackModal.svelte';
-import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
-import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
-import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
-import StatePanel from '$lib/components/player/StatePanel.svelte';
-import { themeStorageKey, categoryStorageKey, currentAudioStorageKey } from '$lib/player/constants';
-import { favoritesStore, addFavorite, removeFavorite, getFavorites } from '$lib/player/favorites';
-import { getCategoryTheme, type Category } from '$lib/category-themes';
-import type { AudioEntry, Manifest, Theme } from '$lib/player/types';
+	import { onMount } from 'svelte';
+	import AudioList from '$lib/components/player/AudioList.svelte';
+	import AudioPlayerBar from '$lib/components/player/AudioPlayerBar.svelte';
+	import AudioPlaybackModal from '$lib/components/AudioPlaybackModal.svelte';
+	import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
+	import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
+	import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
+	import StatePanel from '$lib/components/player/StatePanel.svelte';
+	import {
+		themeStorageKey,
+		categoryStorageKey,
+		currentAudioStorageKey
+	} from '$lib/player/constants';
+	import { favoritesStore, addFavorite, removeFavorite, getFavorites } from '$lib/player/favorites';
+	import { getCategoryTheme, type Category } from '$lib/category-themes';
+	import type { AudioEntry, Manifest, Theme } from '$lib/player/types';
 
-let entries = $state.raw<AudioEntry[]>([]);
-let selectedCategory = $state('All');
-let selectedAudioId = $state<string | null>(null);
-let favorites = $derived($favoritesStore);
-let theme = $state<Theme>('light');
-let isLoading = $state(true);
-let errorMessage = $state('');
-let playMessage = $state('');
-let isPlaying = $state(false);
-let playerLocked = $state(false);
-let playbackProgress = $state(0);
-let audioElement: Audio | null = null;
+	let entries = $state.raw<AudioEntry[]>([]);
+	let selectedCategory = $state('All');
+	let selectedAudioId = $state<string | null>(null);
+	let favorites = $derived($favoritesStore);
+	let theme = $state<Theme>('light');
+	let isLoading = $state(true);
+	let errorMessage = $state('');
+	let playMessage = $state('');
+	let isPlaying = $state(false);
+	let playerLocked = $state(false);
+	let playbackProgress = $state(0);
+	let audioElement: Audio | null = null;
+	let wakeLock: WakeLockSentinel | null = null;
+
+	async function acquireWakeLock() {
+		if (!('wakeLock' in navigator)) return;
+		try {
+			wakeLock = await navigator.wakeLock.request('screen');
+		} catch {
+			// WakeLock may be denied (e.g. battery saver mode) — playback continues normally.
+		}
+	}
+
+	async function releaseWakeLock() {
+		if (!wakeLock) return;
+		try {
+			await wakeLock.release();
+		} finally {
+			wakeLock = null;
+		}
+	}
 
 	function artworkFor(id: string) {
 		return `/artwork/${id}.webp`;
 	}
 
 	let categories = $derived.by(() => [
-	'All',
-	'Favorites',
-	...Array.from(new Set(entries.map((entry) => entry.category))).sort((a, b) => a.localeCompare(b))
-]);
-let visibleEntries = $derived.by(() => {
-	if (selectedCategory === 'All') return [...entries].sort((a, b) => a.name.localeCompare(b.name));
-	if (selectedCategory === 'Favorites') {
-		const favIds = new Set(favorites);
-		return entries.filter((entry) => favIds.has(entry.id));
+		'All',
+		'Favorites',
+		...Array.from(new Set(entries.map((entry) => entry.category))).sort((a, b) =>
+			a.localeCompare(b)
+		)
+	]);
+	let visibleEntries = $derived.by(() => {
+		if (selectedCategory === 'All')
+			return [...entries].sort((a, b) => a.name.localeCompare(b.name));
+		if (selectedCategory === 'Favorites') {
+			const favIds = new Set(favorites);
+			return entries.filter((entry) => favIds.has(entry.id));
+		}
+		return entries
+			.filter((entry) => entry.category === selectedCategory)
+			.sort((a, b) => a.name.localeCompare(b.name));
+	});
+	let selectedEntry = $derived.by(
+		() => entries.find((entry) => entry.id === selectedAudioId) ?? visibleEntries[0] ?? null
+	);
+
+	let modalShow = $state(false);
+	let modalAudio = $state<(AudioEntry & { artwork: string }) | null>(null);
+
+	function openModal(entry: AudioEntry) {
+		modalAudio = { ...entry, artwork: artworkFor(entry.id) };
+		modalShow = true;
 	}
-	return entries
-		.filter((entry) => entry.category === selectedCategory)
-		.sort((a, b) => a.name.localeCompare(b.name));
-});
-let selectedEntry = $derived.by(() =>
-	entries.find((entry) => entry.id === selectedAudioId) ?? visibleEntries[0] ?? null
-);
 
-let modalShow = $state(false);
-let modalAudio = $state<(AudioEntry & { artwork: string }) | null>(null);
-
-function openModal(entry: AudioEntry) {
-	modalAudio = { ...entry, artwork: artworkFor(entry.id) };
-	modalShow = true;
-}
-
-function closeModal() {
-	modalShow = false;
-	modalAudio = null;
-}
+	function closeModal() {
+		modalShow = false;
+		modalAudio = null;
+	}
 
 	let categoryTheme = $derived.by(() => getCategoryTheme(selectedCategory as Category));
 	let categoryBgSubtleClass = $derived.by(() => categoryTheme?.bgSubtleClass ?? '');
@@ -148,7 +174,12 @@ function closeModal() {
 		const storedCategory = localStorage.getItem(categoryStorageKey);
 		const storedAudioId = localStorage.getItem(currentAudioStorageKey);
 
-		if (storedCategory && (storedCategory === 'All' || storedCategory === 'Favorites' || entries.some((e) => e.category === storedCategory))) {
+		if (
+			storedCategory &&
+			(storedCategory === 'All' ||
+				storedCategory === 'Favorites' ||
+				entries.some((e) => e.category === storedCategory))
+		) {
 			selectedCategory = storedCategory;
 		}
 
@@ -173,6 +204,7 @@ function closeModal() {
 		audioElement = audio;
 		isPlaying = true;
 		playerLocked = true;
+		void acquireWakeLock();
 
 		if ('mediaSession' in navigator) {
 			navigator.mediaSession.metadata = new MediaMetadata({
@@ -198,6 +230,7 @@ function closeModal() {
 		isPlaying = false;
 		playerLocked = false;
 		playbackProgress = 0;
+		void releaseWakeLock();
 
 		if ('mediaSession' in navigator) {
 			navigator.mediaSession.playbackState = 'none';
@@ -244,7 +277,10 @@ function closeModal() {
 	/>
 </svelte:head>
 
-<main class="overflow-hidden px-2.5 pt-3 pb-32 sm:px-4 sm:pt-5 sm:pb-36" aria-labelledby="player-title">
+<main
+	class="overflow-hidden px-2.5 pt-3 pb-32 sm:px-4 sm:pt-5 sm:pb-36"
+	aria-labelledby="player-title"
+>
 	<PlayerHeader
 		{theme}
 		onToggleTheme={toggleTheme}
@@ -270,15 +306,23 @@ function closeModal() {
 				{isFavorite}
 				onSelectEntry={selectEntry}
 				onToggleFavorite={toggleFavorite}
-				categoryBgSubtleClass={categoryBgSubtleClass}
-				categoryBorderClass={categoryBorderClass}
+				{categoryBgSubtleClass}
+				{categoryBorderClass}
 				locked={playerLocked}
 			/>
 		{/if}
 	{/if}
 </main>
 
-<AudioPlayerBar {selectedEntry} {playMessage} {isPlaying} progress={playbackProgress} locked={playerLocked} onToggle={togglePlayback} playerBgClass={playerBgClass} />
+<AudioPlayerBar
+	{selectedEntry}
+	{playMessage}
+	{isPlaying}
+	progress={playbackProgress}
+	locked={playerLocked}
+	onToggle={togglePlayback}
+	{playerBgClass}
+/>
 
 <AudioPlaybackModal show={modalShow} audio={modalAudio} onclose={closeModal} />
 
@@ -291,11 +335,16 @@ function closeModal() {
 		margin: 0;
 		background:
 			radial-gradient(ellipse 80% 40% at 10% 0%, rgba(15, 118, 110, 0.22), transparent),
-			radial-gradient(ellipse 70% 35% at 90% 0%, rgba(180, 83, 9, 0.20), transparent),
+			radial-gradient(ellipse 70% 35% at 90% 0%, rgba(180, 83, 9, 0.2), transparent),
 			radial-gradient(ellipse 60% 50% at 50% 100%, rgba(177, 77, 42, 0.08), transparent),
 			linear-gradient(180deg, #f8f2e4 0%, var(--bg) 60%);
 		color: var(--text);
-		font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+		font-family:
+			'Plus Jakarta Sans',
+			ui-sans-serif,
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	:global(.dark body) {
