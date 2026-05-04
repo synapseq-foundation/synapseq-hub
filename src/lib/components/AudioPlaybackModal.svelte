@@ -105,13 +105,13 @@
 			{/if}
 
 			<!-- Drag handle (mobile) -->
-			<div class="flex justify-center pb-1 pt-3 sm:hidden">
+			<div class="flex justify-center pt-3 pb-1 sm:hidden">
 				<div class="h-1 w-10 rounded-full bg-[var(--line-strong)]"></div>
 			</div>
 
 			<!-- Close button -->
 			<button
-				class="absolute right-4 top-4 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-strong)] text-[var(--muted)] transition-all duration-150 hover:border-[var(--line-strong)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-90"
+				class="absolute top-4 right-4 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-strong)] text-[var(--muted)] transition-all duration-150 hover:border-[var(--line-strong)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-90"
 				onclick={handleClose}
 				aria-label="Close"
 			>
@@ -119,7 +119,7 @@
 			</button>
 
 			<!-- Content -->
-			<div class="px-5 pb-8 pt-4 sm:px-6 sm:pb-8 sm:pt-5">
+			<div class="px-5 pt-4 pb-8 sm:px-6 sm:pt-5 sm:pb-8">
 				<!-- Artwork + meta -->
 				<div class="flex items-start gap-4">
 					<!-- Artwork -->
@@ -140,26 +140,30 @@
 
 					<!-- Name, category, author -->
 					<div class="grid min-w-0 flex-1 gap-1 pt-1">
-						<h2 class="m-0 text-[1.05rem] font-[740] leading-snug tracking-[-0.03em] text-[var(--text)] sm:text-[1.1rem]">
+						<h2
+							class="m-0 text-[1.05rem] leading-snug font-[740] tracking-[-0.03em] text-[var(--text)] sm:text-[1.1rem]"
+						>
 							{audio.name}
 						</h2>
 						{#if categoryRgbValue}
 							<span
-								class="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-[0.7rem] font-[600] uppercase tracking-[0.1em]"
+								class="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-[0.7rem] font-[600] tracking-[0.1em] uppercase"
 								style="background: rgba({categoryRgbValue}, 0.15); color: rgba({categoryRgbValue}, 1);"
 							>
 								{audio.category}
 							</span>
 						{:else}
-							<span class="text-[0.75rem] font-[500] uppercase tracking-[0.1em] text-[var(--muted)]">
+							<span
+								class="text-[0.75rem] font-[500] tracking-[0.1em] text-[var(--muted)] uppercase"
+							>
 								{audio.category}
 							</span>
 						{/if}
-						{#if audio.author}
+						<!-- {#if audio.author}
 							<span class="mt-0.5 truncate text-[0.8rem] text-[var(--muted)]">
 								by {audio.author}
 							</span>
-						{/if}
+						{/if} -->
 					</div>
 				</div>
 
@@ -174,7 +178,9 @@
 					</div>
 				{:else if description.length > 0}
 					<div class="scrollbar-none max-h-[180px] overflow-y-auto sm:max-h-[220px]">
-						<p class="m-0 whitespace-pre-wrap text-[0.88rem] leading-relaxed text-[var(--muted)] sm:text-[0.9rem]">
+						<p
+							class="m-0 text-[0.88rem] leading-relaxed whitespace-pre-wrap text-[var(--muted)] sm:text-[0.9rem]"
+						>
 							{description.join('\n')}
 						</p>
 					</div>
