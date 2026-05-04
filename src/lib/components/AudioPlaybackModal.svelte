@@ -77,16 +77,10 @@
 				{#if loading}
 					<p class="text-sm" style="color: var(--muted);">Loading description...</p>
 				{:else if description.length > 0}
-					<div class="w-full mb-4">
+					<div class="w-full rounded-lg p-4 mb-6" style="background: var(--panel);">
 						<CollapsibleText text={description.join("\n")} />
 					</div>
 				{/if}
-
-				<div class="w-full rounded-lg p-4 mb-6" style="background: var(--panel);">
-					<p class="text-sm mb-2" style="color: var(--text);">Listen in a calm environment without interruptions.</p>
-					<p class="text-sm mb-2" style="color: var(--text);">Focus on your breathing and try not to think about random things.</p>
-					<p class="text-sm" style="color: var(--text);">Enjoy the experience!</p>
-				</div>
 			</div>
 
 			<div class="flex gap-3">

@@ -17,14 +17,18 @@
 <div class="relative">
 	<div
 		bind:this={textElement}
-		class="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap"
+		class="leading-relaxed whitespace-pre-wrap"
 		class:line-clamp-3={!expanded && isLong}
+		style="font-size: 1rem; color: var(--text);"
 	>
 		{text}
 	</div>
 	{#if isLong}
 		<button
-			class="text-blue-400 hover:text-blue-300 text-sm mt-1 cursor-pointer"
+			class="text-sm mt-1 cursor-pointer"
+			style="color: var(--accent);"
+			onmouseenter={(e) => e.currentTarget.style.opacity = '0.8'}
+			onmouseleave={(e) => e.currentTarget.style.opacity = '1'}
 			onclick={() => expanded = !expanded}
 		>
 			{expanded ? "Collapse" : "Expand"}
