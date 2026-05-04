@@ -2,6 +2,7 @@
 import { onMount } from 'svelte';
 import AudioList from '$lib/components/player/AudioList.svelte';
 import AudioPlayerBar from '$lib/components/player/AudioPlayerBar.svelte';
+import AudioPlaybackModal from '$lib/components/AudioPlaybackModal.svelte';
 import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
 import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
 import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
@@ -46,6 +47,19 @@ let visibleEntries = $derived.by(() => {
 let selectedEntry = $derived.by(() =>
 	entries.find((entry) => entry.id === selectedAudioId) ?? visibleEntries[0] ?? null
 );
+
+let modalShow = $state(false);
+let modalAudio = $state<(AudioEntry & { artwork: string }) | null>(null);
+
+function openModal(entry: AudioEntry) {
+	modalAudio = { ...entry, artwork: artworkFor(entry.id) };
+	modalShow = true;
+}
+
+function closeModal() {
+	modalShow = false;
+	modalAudio = null;
+}
 
 	let categoryTheme = $derived.by(() => getCategoryTheme(selectedCategory as Category));
 	let categoryBgClass = $derived.by(() => categoryTheme?.bgClass ?? '');
@@ -199,6 +213,7 @@ let selectedEntry = $derived.by(() =>
 		selectedAudioId = entry.id;
 		playMessage = '';
 		writeStorage(currentAudioStorageKey, entry.id);
+		openModal(entry);
 	}
 </script>
 
@@ -245,6 +260,8 @@ let selectedEntry = $derived.by(() =>
 </main>
 
 <AudioPlayerBar {selectedEntry} {playMessage} {isPlaying} progress={playbackProgress} locked={playerLocked} onToggle={togglePlayback} categoryBgClass={categoryBgClass} />
+
+<AudioPlaybackModal show={modalShow} audio={modalAudio} onclose={closeModal} />
 
 <!-- AudioPlaybackModal removed - playback now handled directly in AudioPlayerBar -->
 

@@ -39,17 +39,15 @@
 	});
 
 	function handleClose() {
-		show = false;
 		if (onclose) onclose();
 	}
 
 	function handlePlay() {
-		show = false;
 		if (onclose) onclose();
 	}
 
 	function handleOverlayClick(e: MouseEvent) {
-		if (e.target === e.currentTarget) handleClose();
+		if (e.target === e.currentTarget && onclose) onclose();
 	}
 
 	function handleOverlayKeydown(e: KeyboardEvent) {
