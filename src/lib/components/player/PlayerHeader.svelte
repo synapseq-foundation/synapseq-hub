@@ -25,8 +25,7 @@
 		'fixed left-0 right-0 z-50 mx-auto transition-all duration-300 ease-in-out',
 		compact
 			? 'top-[calc(0.5rem+env(safe-area-inset-top,0px))] w-[min(calc(100%-24px),480px)] px-2.5'
-			: 'top-0 w-full px-2.5 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:px-4',
-		categoryBgGradientClass
+			: 'top-0 w-full px-2.5 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:px-4'
 	]}
 >
 	<div
@@ -34,7 +33,8 @@
 			'grid items-center gap-3 border border-[var(--line)] bg-[var(--panel-strong)] backdrop-blur-xl transition-all duration-300 ease-in-out sm:gap-4',
 			compact
 				? 'grid-cols-[auto_1fr_auto] rounded-full px-3 py-1.5 shadow-[0_4px_24px_rgba(0,0,0,0.13)]'
-				: 'grid-cols-[auto_1fr_auto] rounded-2xl px-3.5 py-2.5 shadow-[0_2px_16px_rgba(0,0,0,0.07)] sm:rounded-3xl sm:px-5 sm:py-3'
+				: 'grid-cols-[auto_1fr_auto] rounded-2xl px-3.5 py-2.5 shadow-[0_2px_16px_rgba(0,0,0,0.07)] sm:rounded-3xl sm:px-5 sm:py-3',
+			categoryBgGradientClass
 		]}
 	>
 		<!-- Logo -->
