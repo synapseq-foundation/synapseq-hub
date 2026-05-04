@@ -24,6 +24,8 @@
 	let isLoading = $state(true);
 	let errorMessage = $state('');
 	let playMessage = $state('');
+	let scrollY = $state(0);
+	let compactHeader = $derived(scrollY > 60);
 	let isPlaying = $state(false);
 	let isPaused = $state(false);
 	// List is locked for the entire session (playing OR paused).
@@ -299,6 +301,8 @@
 	}
 </script>
 
+<svelte:window bind:scrollY />
+
 <svelte:head>
 	<title>Hub Player | SynapSeq</title>
 	<meta
@@ -307,18 +311,19 @@
 	/>
 </svelte:head>
 
+<PlayerHeader
+	{theme}
+	compact={compactHeader}
+	onToggleTheme={toggleTheme}
+	categoryBorderClass={categoryHeaderBorderClass}
+	categoryBgGradientClass={categoryHeaderBgGradientClass}
+/>
+
 <main
-	class="overflow-hidden px-2.5 pt-3 pb-32 sm:px-4 sm:pt-5 sm:pb-36"
-	style="padding-top: calc(0.75rem + env(safe-area-inset-top, 0px))"
+	class="px-2.5 pb-32 sm:px-4 sm:pb-36"
+	style="padding-top: calc(5rem + env(safe-area-inset-top, 0px))"
 	aria-labelledby="player-title"
 >
-	<PlayerHeader
-		{theme}
-		onToggleTheme={toggleTheme}
-		categoryBorderClass={categoryHeaderBorderClass}
-		categoryBgGradientClass={categoryHeaderBgGradientClass}
-	/>
-
 	{#if isLoading}
 		<LoadingScreen />
 	{:else if errorMessage}
