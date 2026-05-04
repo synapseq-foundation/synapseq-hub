@@ -26,7 +26,7 @@
 	}: Props = $props();
 </script>
 
-<div class="grid gap-2 p-3.5 pt-2 sm:gap-2.5 sm:p-5 sm:pt-2.5" aria-label="Available audio entries">
+<div class="grid gap-2 p-3.5 pt-2 sm:gap-2.5 sm:p-4 sm:pt-3 lg:grid-cols-2 lg:gap-3 lg:p-0 lg:pt-0" aria-label="Available audio entries">
 	{#each entries as entry (entry.id)}
 		{@const favorite = isFavorite(entry.id)}
 		{@const selected = selectedEntry?.id === entry.id}

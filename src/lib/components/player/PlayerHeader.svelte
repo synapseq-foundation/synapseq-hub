@@ -33,10 +33,12 @@
 	class={[
 		'fixed left-0 right-0 z-50 mx-auto transition-all duration-300 ease-in-out',
 		compact
-			? 'top-[calc(0.5rem+env(safe-area-inset-top,0px))] w-[min(calc(100%-24px),480px)] px-2.5'
-			: 'top-0 w-full px-2.5 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:px-4'
+			? 'top-[calc(0.5rem+env(safe-area-inset-top,0px))] w-[min(calc(100%-24px),480px)] px-2.5 lg:w-[min(calc(100%-48px),1100px)]'
+			: 'top-0 w-full px-2.5 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:px-4 lg:px-8'
 	]}
 >
+	<!-- On desktop (non-compact), constrain inner content to max-width -->
+	<div class={compact ? '' : 'mx-auto max-w-[1100px]'}>
 	<div
 		class={[
 			'grid items-center gap-3 border border-[var(--line)] bg-[var(--panel-strong)] backdrop-blur-xl transition-all duration-300 ease-in-out sm:gap-4',
@@ -138,6 +140,7 @@
 				{/each}
 			</div>
 		</div>
+	</div>
 	</div>
 </header>
 

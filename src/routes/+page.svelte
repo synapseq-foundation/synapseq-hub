@@ -332,40 +332,54 @@
 />
 
 <main
-	class="px-2.5 pb-32 sm:px-4 sm:pb-36"
+	class="pb-32 sm:pb-36"
 	style="padding-top: calc(5rem + env(safe-area-inset-top, 0px))"
 	aria-labelledby="player-title"
 >
-	{#if isLoading}
-		<LoadingScreen />
-	{:else if errorMessage}
-		<StatePanel message={errorMessage} role="alert" />
-	{:else if entries.length === 0}
-		<StatePanel message="No audio entries are available yet." />
-	{:else}
-		<CategoryBadges
-			{categories}
-			{selectedCategory}
-			hasFavorites={favorites.length > 0}
-			onSelectCategory={selectCategory}
-			onClearFavorites={handleClearFavorites}
-		/>
-
-		{#if selectedCategory === 'Favorites' && visibleEntries.length === 0}
-			<StatePanel message="You haven't favorited any audio yet." />
+	<!-- Desktop: centred wrapper with sidebar layout -->
+	<div class="mx-auto w-full max-w-[1100px] px-2.5 sm:px-6 lg:px-8 lg:pt-8">
+		{#if isLoading}
+			<LoadingScreen />
+		{:else if errorMessage}
+			<StatePanel message={errorMessage} role="alert" />
+		{:else if entries.length === 0}
+			<StatePanel message="No audio entries are available yet." />
 		{:else}
-			<AudioList
-				entries={visibleEntries}
-				{selectedEntry}
-				{isFavorite}
-				onSelectEntry={selectEntry}
-				onToggleFavorite={toggleFavorite}
-				{categoryBgSubtleClass}
-				{categoryBorderClass}
-				locked={playerLocked}
-			/>
+			<!-- Mobile: stacked. Desktop: sidebar + content side-by-side -->
+			<div class="lg:flex lg:items-start lg:gap-6">
+
+				<!-- Categories sidebar (desktop: sticky floating panel; mobile: horizontal strip) -->
+				<aside class="lg:sticky lg:top-[calc(6rem+env(safe-area-inset-top,0px))] lg:w-52 lg:shrink-0">
+					<CategoryBadges
+						{categories}
+						{selectedCategory}
+						hasFavorites={favorites.length > 0}
+						onSelectCategory={selectCategory}
+						onClearFavorites={handleClearFavorites}
+					/>
+				</aside>
+
+				<!-- Audio list area -->
+				<div class="min-w-0 flex-1">
+					{#if selectedCategory === 'Favorites' && visibleEntries.length === 0}
+						<StatePanel message="You haven't favorited any audio yet." />
+					{:else}
+						<AudioList
+							entries={visibleEntries}
+							{selectedEntry}
+							{isFavorite}
+							onSelectEntry={selectEntry}
+							onToggleFavorite={toggleFavorite}
+							{categoryBgSubtleClass}
+							{categoryBorderClass}
+							locked={playerLocked}
+						/>
+					{/if}
+				</div>
+
+			</div>
 		{/if}
-	{/if}
+	</div>
 </main>
 
 <AudioPlayerBar
