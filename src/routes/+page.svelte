@@ -123,6 +123,7 @@ let modalAudioData = $derived(getAudioData(selectedEntry));
 		selectedAudioId = entry.id;
 		playMessage = '';
 		writeStorage(currentAudioStorageKey, entry.id);
+		showModal = true;
 	}
 
 	function selectCategory(category: string) {

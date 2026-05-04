@@ -1,8 +1,8 @@
 <script lang="ts">
-	let { text = "" }: { text?: string } = $props()
+	let { text = '' }: { text?: string } = $props();
 </script>
 
-<div class="custom-scroll overflow-y-auto max-h-[120px] pr-2">
+<div class="custom-scroll h-24 max-h-[120px] overflow-y-auto pr-2">
 	<p class="leading-relaxed whitespace-pre-wrap" style="font-size: 1rem; color: var(--text);">
 		{text}
 	</p>

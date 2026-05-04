@@ -11,6 +11,10 @@
 	};
 
 	let { selectedEntry, playMessage, onPlay, categoryBgClass = '' }: Props = $props();
+
+	function handlePlay() {
+		// Temporarily disabled - no action
+	}
 </script>
 
 <footer
@@ -32,7 +36,7 @@
 			<button
 				class="inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-2 rounded-full border border-transparent bg-[var(--accent)] px-[18px] font-[760] text-[#fffaf1] transition duration-150 hover:-translate-y-px hover:bg-[var(--accent-strong)] max-[620px]:w-12 max-[620px]:px-0"
 				type="button"
-				onclick={onPlay}
+				onclick={handlePlay}
 			>
 				<Play size={20} fill="currentColor" />
 				<span class="max-[620px]:hidden">Play</span>
