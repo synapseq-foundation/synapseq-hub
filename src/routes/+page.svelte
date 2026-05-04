@@ -3,6 +3,7 @@
 	import AudioList from '$lib/components/player/AudioList.svelte';
 	import AudioPlayerBar from '$lib/components/player/AudioPlayerBar.svelte';
 	import AudioPlaybackModal from '$lib/components/AudioPlaybackModal.svelte';
+	import ConfirmSheet from '$lib/components/ConfirmSheet.svelte';
 	import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
 	import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
 	import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
@@ -12,7 +13,7 @@
 		categoryStorageKey,
 		currentAudioStorageKey
 	} from '$lib/player/constants';
-	import { favoritesStore, addFavorite, removeFavorite, getFavorites } from '$lib/player/favorites';
+	import { favoritesStore, addFavorite, removeFavorite, getFavorites, clearFavorites } from '$lib/player/favorites';
 	import { getCategoryTheme, type Category } from '$lib/category-themes';
 	import type { AudioEntry, Manifest, Theme } from '$lib/player/types';
 
@@ -90,6 +91,17 @@
 	function closeModal() {
 		modalShow = false;
 		modalAudio = null;
+	}
+
+	let confirmClearShow = $state(false);
+
+	function handleClearFavorites() {
+		confirmClearShow = true;
+	}
+
+	function executeClearFavorites() {
+		clearFavorites();
+		confirmClearShow = false;
 	}
 
 	let categoryTheme = $derived.by(() => getCategoryTheme(selectedCategory as Category));
@@ -331,7 +343,13 @@
 	{:else if entries.length === 0}
 		<StatePanel message="No audio entries are available yet." />
 	{:else}
-		<CategoryBadges {categories} {selectedCategory} onSelectCategory={selectCategory} />
+		<CategoryBadges
+			{categories}
+			{selectedCategory}
+			hasFavorites={favorites.length > 0}
+			onSelectCategory={selectCategory}
+			onClearFavorites={handleClearFavorites}
+		/>
 
 		{#if selectedCategory === 'Favorites' && visibleEntries.length === 0}
 			<StatePanel message="You haven't favorited any audio yet." />
@@ -364,7 +382,15 @@
 
 <AudioPlaybackModal show={modalShow} audio={modalAudio} onclose={closeModal} />
 
-<!-- AudioPlaybackModal removed - playback now handled directly in AudioPlayerBar -->
+<ConfirmSheet
+	show={confirmClearShow}
+	title="Clear all favorites?"
+	description="This will remove all favorited audio from your device. This action cannot be undone."
+	confirmLabel="Clear favorites"
+	cancelLabel="Cancel"
+	onconfirm={executeClearFavorites}
+	oncancel={() => (confirmClearShow = false)}
+/>
 
 <style>
 	:global(body) {

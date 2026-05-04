@@ -46,3 +46,8 @@ export function getFavorites(): string[] {
 	favoritesStore.subscribe((ids) => { result = ids; })();
 	return result;
 }
+
+export function clearFavorites(): void {
+	favoritesStore.set([]);
+	writeFavorites([]);
+}

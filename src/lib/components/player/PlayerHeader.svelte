@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Moon, Sun } from '@lucide/svelte';
+	import { Moon, Sun, Menu, Globe, GitFork, Coffee } from '@lucide/svelte';
 	import { defaultArtwork } from '$lib/player/constants';
+	import MenuSheet from '$lib/components/MenuSheet.svelte';
 	import type { Theme } from '$lib/player/types';
 
 	type Props = {
@@ -18,6 +19,14 @@
 		categoryBorderClass = '',
 		categoryBgGradientClass = ''
 	}: Props = $props();
+
+	let menuOpen = $state(false);
+
+	const desktopLinks = [
+		{ label: 'SynapSeq Site', href: 'https://synapseq.org', icon: Globe },
+		{ label: 'Repository', href: 'https://github.com/synapseq-foundation/synapseq-hub', icon: GitFork },
+		{ label: 'Buy me a Coffee', href: 'https://buymeacoffee.com/ruankleinb', icon: Coffee }
+	] as const;
 </script>
 
 <header
@@ -71,28 +80,66 @@
 			<span
 				class={[
 					'truncate font-[500] uppercase tracking-[0.12em] text-[var(--muted)] transition-all duration-300',
-					compact ? 'text-[0.6rem] opacity-0 h-0 overflow-hidden' : 'text-[0.7rem] sm:text-[0.72rem]'
+					compact ? 'h-0 overflow-hidden opacity-0 text-[0.6rem]' : 'text-[0.7rem] sm:text-[0.72rem]'
 				]}
 			>
 				SynapSeq
 			</span>
 		</div>
 
-		<!-- Theme toggle -->
-		<button
-			class={[
-				'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-strong)] text-[var(--text)] shadow-sm transition-all duration-150 hover:-translate-y-px hover:border-[var(--accent-soft)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-95',
-				compact ? 'h-8 w-8' : 'h-10 w-10'
-			]}
-			type="button"
-			onclick={onToggleTheme}
-			aria-label="Toggle theme"
-		>
-			{#if theme === 'dark'}
-				<Sun size={compact ? 15 : 18} />
-			{:else}
-				<Moon size={compact ? 15 : 18} />
-			{/if}
-		</button>
+		<!-- Actions -->
+		<div class="flex shrink-0 items-center gap-1.5">
+
+			<!-- Mobile: hamburger only -->
+			<button
+				class={[
+					'sm:hidden inline-flex cursor-pointer items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-strong)] text-[var(--text)] shadow-sm transition-all duration-150 hover:-translate-y-px hover:border-[var(--accent-soft)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-95',
+					compact ? 'h-8 w-8' : 'h-10 w-10'
+				]}
+				type="button"
+				onclick={() => (menuOpen = true)}
+				aria-label="Open menu"
+			>
+				<Menu size={compact ? 15 : 18} />
+			</button>
+
+			<!-- Desktop: theme toggle + separator + links -->
+			<div class="hidden sm:flex sm:items-center sm:gap-1.5">
+				<!-- Theme toggle -->
+				<button
+					class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-strong)] text-[var(--text)] shadow-sm transition-all duration-150 hover:-translate-y-px hover:border-[var(--accent-soft)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-95"
+					type="button"
+					onclick={onToggleTheme}
+					aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+					data-tooltip={theme === 'dark' ? 'Light theme' : 'Dark theme'}
+				>
+					{#if theme === 'dark'}
+						<Sun size={16} />
+					{:else}
+						<Moon size={16} />
+					{/if}
+				</button>
+
+				<!-- Separator -->
+				<div class="mx-1 h-5 w-px bg-[var(--line-strong)]"></div>
+
+				<!-- External links -->
+				{#each desktopLinks as link (link.href)}
+					<a
+						href={link.href}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-strong)] text-[var(--muted)] shadow-sm transition-all duration-150 hover:-translate-y-px hover:border-[var(--accent-soft)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-95"
+						data-tooltip={link.label}
+						aria-label={link.label}
+					>
+						<link.icon size={16} />
+					</a>
+				{/each}
+			</div>
+		</div>
 	</div>
 </header>
+
+<!-- Mobile menu sheet -->
+<MenuSheet show={menuOpen} {theme} onclose={() => (menuOpen = false)} {onToggleTheme} />
