@@ -258,7 +258,14 @@
 	function destroyPlayback() {
 		if (!audioElement) return;
 		audioElement.pause();
-		audioElement.currentTime = 0;
+		// Explicitly clear the src and call load() before discarding the element.
+		// This forces WebKit/Safari to fully release the media resource and
+		// relinquish NowPlaying ownership — without this, the browser may keep the
+		// audio element registered as the active NowPlaying source even after the
+		// JS reference is dropped, leaving the OS play button functional with no
+		// corresponding app state to update.
+		audioElement.src = '';
+		audioElement.load();
 		audioElement = null;
 		isPlaying = false;
 		isPaused = false;
@@ -266,11 +273,11 @@
 		void releaseWakeLock();
 
 		if ('mediaSession' in navigator) {
-			navigator.mediaSession.playbackState = 'none';
-			navigator.mediaSession.metadata = null;
 			navigator.mediaSession.setActionHandler('play', null);
 			navigator.mediaSession.setActionHandler('pause', null);
 			navigator.mediaSession.setActionHandler('stop', null);
+			navigator.mediaSession.metadata = null;
+			navigator.mediaSession.playbackState = 'none';
 		}
 	}
 
