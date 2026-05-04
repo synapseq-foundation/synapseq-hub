@@ -230,7 +230,7 @@ function closeModal() {
 	/>
 </svelte:head>
 
-<main class="overflow-hidden px-2.5 pt-3 pb-32 sm:px-4 sm:pt-[22px] sm:pb-[136px]" aria-labelledby="player-title">
+<main class="overflow-hidden px-2.5 pt-3 pb-32 sm:px-4 sm:pt-5 sm:pb-36" aria-labelledby="player-title">
 	<PlayerHeader
 		{theme}
 		onToggleTheme={toggleTheme}
@@ -276,19 +276,20 @@ function closeModal() {
 		min-height: 100vh;
 		margin: 0;
 		background:
-			radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 24%),
-			radial-gradient(circle at top right, rgba(180, 83, 9, 0.16), transparent 20%),
-			linear-gradient(180deg, #fbf6eb 0%, var(--bg) 100%);
+			radial-gradient(ellipse 80% 40% at 10% 0%, rgba(15, 118, 110, 0.22), transparent),
+			radial-gradient(ellipse 70% 35% at 90% 0%, rgba(180, 83, 9, 0.20), transparent),
+			radial-gradient(ellipse 60% 50% at 50% 100%, rgba(177, 77, 42, 0.08), transparent),
+			linear-gradient(180deg, #f8f2e4 0%, var(--bg) 60%);
 		color: var(--text);
-		font-family:
-			Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+		font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
 	}
 
 	:global(.dark body) {
 		background:
-			radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 26%),
-			radial-gradient(circle at top right, rgba(180, 83, 9, 0.14), transparent 22%),
-			linear-gradient(180deg, #1c1714 0%, var(--bg) 100%);
+			radial-gradient(ellipse 80% 40% at 10% 0%, rgba(15, 118, 110, 0.18), transparent),
+			radial-gradient(ellipse 70% 35% at 90% 0%, rgba(180, 83, 9, 0.18), transparent),
+			radial-gradient(ellipse 60% 50% at 50% 100%, rgba(177, 77, 42, 0.06), transparent),
+			linear-gradient(180deg, #1a1512 0%, var(--bg) 60%);
 	}
 
 	:global(button) {

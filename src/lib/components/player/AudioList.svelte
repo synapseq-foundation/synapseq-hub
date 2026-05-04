@@ -26,39 +26,46 @@
 	}: Props = $props();
 </script>
 
-<div class="grid gap-2.5 p-3.5 sm:p-[18px]" aria-label="Available audio entries">
+<div class="grid gap-2 p-3.5 pt-2 sm:gap-2.5 sm:p-5 sm:pt-2.5" aria-label="Available audio entries">
 	{#each entries as entry (entry.id)}
 		{@const favorite = isFavorite(entry.id)}
+		{@const selected = selectedEntry?.id === entry.id}
 		<article
 			class={[
-				'grid grid-cols-[1fr_auto] items-center gap-3 rounded-3xl border bg-[var(--panel-strong)] transition-colors duration-300 ease-in-out',
-				selectedEntry?.id === entry.id
-					? 'border-[var(--accent)] shadow-[0_0_0_4px_var(--accent-soft)]'
-					: 'border-[var(--line)]',
-				categoryBgSubtleClass ? [categoryBgSubtleClass, 'bg-[var(--panel-strong)]'] : [],
-				categoryBorderClass ? [categoryBorderClass] : []
+				'group grid grid-cols-[1fr_auto] items-center overflow-hidden rounded-2xl border transition-all duration-200 ease-in-out sm:rounded-[22px]',
+				selected
+					? 'border-[var(--accent)] bg-[var(--panel-strong)] shadow-[0_0_0_3px_var(--accent-soft),0_4px_20px_rgba(0,0,0,0.08)]'
+					: 'border-[var(--line)] bg-[var(--panel-strong)] hover:border-[var(--line-strong)] hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]',
+				categoryBgSubtleClass,
+				categoryBorderClass && !selected ? categoryBorderClass : ''
 			]}
 		>
+			<!-- Left accent bar for selected state -->
+			{#if selected}
+				<div class="absolute left-0 top-0 h-full w-0.5 rounded-r-full bg-[var(--accent)]"></div>
+			{/if}
+
 			<button
 				type="button"
-				class="min-w-0 cursor-pointer border-0 bg-transparent p-3 text-left text-inherit"
+				class="relative min-w-0 cursor-pointer border-0 bg-transparent px-3 py-2.5 text-left text-inherit transition-opacity duration-150 active:opacity-70 sm:px-4 sm:py-3 {locked ? 'pointer-events-none' : ''}"
 				onclick={() => { if (locked) return; onSelectEntry(entry); }}
 			>
-				<AudioDetails {entry} context="row" />
+				<AudioDetails {entry} context="row" {selected} />
 			</button>
+
 			<button
 				type="button"
 				class={[
-					'mr-3 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition duration-150 hover:-translate-y-px hover:border-[var(--line-strong)] hover:bg-[var(--accent-soft)]',
+					'mr-3 inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all duration-150 active:scale-90 sm:h-11 sm:w-11',
 					favorite
-						? 'border-transparent bg-[var(--accent-soft)] text-[var(--accent-strong)]'
-						: 'border-[var(--line)] bg-[var(--panel-strong)] text-[var(--text)]'
+						? 'border-transparent bg-[var(--accent-soft)] text-[var(--accent)]'
+						: 'border-[var(--line)] bg-transparent text-[var(--muted)] hover:border-[var(--line-strong)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]'
 				]}
 				onclick={() => onToggleFavorite(entry)}
 				aria-label={favorite ? `Unfavorite ${entry.name}` : `Favorite ${entry.name}`}
 				aria-pressed={favorite}
 			>
-				<Heart size={21} fill={favorite ? 'currentColor' : 'none'} />
+				<Heart size={17} fill={favorite ? 'currentColor' : 'none'} strokeWidth={favorite ? 0 : 2} />
 			</button>
 		</article>
 	{/each}
