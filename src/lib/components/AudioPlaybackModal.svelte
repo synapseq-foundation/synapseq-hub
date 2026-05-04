@@ -76,6 +76,51 @@
 		const img = event.currentTarget as HTMLImageElement;
 		if (!img.src.endsWith(defaultArtwork)) img.src = defaultArtwork;
 	}
+
+	// --- Swipe-to-dismiss ---
+	const DISMISS_THRESHOLD_PX = 80;
+	const DISMISS_VELOCITY = 0.5; // px/ms
+
+	let dragY = $state(0);
+	let dragging = $state(false);
+	let startY = 0;
+	let startTime = 0;
+
+	function onDragStart(e: PointerEvent) {
+		// Only handle touch-like input (touch or stylus) on mobile, or any pointer on the handle itself
+		dragging = true;
+		startY = e.clientY;
+		startTime = e.timeStamp;
+		dragY = 0;
+		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+	}
+
+	function onDragMove(e: PointerEvent) {
+		if (!dragging) return;
+		const delta = e.clientY - startY;
+		// Only allow downward drag
+		dragY = Math.max(0, delta);
+	}
+
+	function onDragEnd(e: PointerEvent) {
+		if (!dragging) return;
+		dragging = false;
+
+		const elapsed = e.timeStamp - startTime;
+		const velocity = elapsed > 0 ? dragY / elapsed : 0;
+
+		if (dragY >= DISMISS_THRESHOLD_PX || velocity >= DISMISS_VELOCITY) {
+			// Animate out, close, then reset so the next open starts clean
+			dragY = window.innerHeight;
+			setTimeout(() => {
+				handleClose();
+				dragY = 0;
+			}, 220);
+		} else {
+			// Snap back
+			dragY = 0;
+		}
+	}
 </script>
 
 {#if show && audio}
@@ -95,6 +140,7 @@
 		<!-- Sheet / Card -->
 		<div
 			class="relative z-10 w-full overflow-hidden rounded-t-[28px] border border-[var(--line)] bg-[var(--panel-strong)] shadow-[0_-8px_48px_rgba(0,0,0,0.22)] sm:mx-4 sm:max-w-sm sm:rounded-[28px] sm:shadow-[var(--shadow)]"
+			style="transform: translateY({dragY}px); transition: {dragging ? 'none' : 'transform 0.22s cubic-bezier(0.32,0.72,0,1)'};"
 		>
 			<!-- Category color wash at top -->
 			{#if categoryRgbValue}
@@ -104,8 +150,15 @@
 				></div>
 			{/if}
 
-			<!-- Drag handle (mobile) -->
-			<div class="flex justify-center pt-3 pb-1 sm:hidden">
+			<!-- Drag handle (mobile) — pointer events anchored here -->
+			<div
+				class="flex touch-none justify-center pt-3 pb-1 sm:hidden"
+				role="presentation"
+				onpointerdown={onDragStart}
+				onpointermove={onDragMove}
+				onpointerup={onDragEnd}
+				onpointercancel={onDragEnd}
+			>
 				<div class="h-1 w-10 rounded-full bg-[var(--line-strong)]"></div>
 			</div>
 
@@ -159,11 +212,6 @@
 								{audio.category}
 							</span>
 						{/if}
-						<!-- {#if audio.author}
-							<span class="mt-0.5 truncate text-[0.8rem] text-[var(--muted)]">
-								by {audio.author}
-							</span>
-						{/if} -->
 					</div>
 				</div>
 
