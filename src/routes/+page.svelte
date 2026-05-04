@@ -167,7 +167,7 @@ function closeModal() {
 			}
 		});
 		audio.addEventListener('ended', () => {
-			stopPlayback();
+			destroyPlayback();
 		});
 		audio.play();
 		audioElement = audio;
@@ -183,13 +183,14 @@ function closeModal() {
 					{ src: `/artwork/${selectedEntry.id}.webp`, sizes: '512x512', type: 'image/webp' }
 				]
 			});
+			navigator.mediaSession.playbackState = 'playing';
 			navigator.mediaSession.setActionHandler('play', () => startPlayback());
-			navigator.mediaSession.setActionHandler('pause', () => stopPlayback());
-			navigator.mediaSession.setActionHandler('stop', () => stopPlayback());
+			navigator.mediaSession.setActionHandler('pause', () => systemPause());
+			navigator.mediaSession.setActionHandler('stop', () => destroyPlayback());
 		}
 	}
 
-	function stopPlayback() {
+	function destroyPlayback() {
 		if (!audioElement) return;
 		audioElement.pause();
 		audioElement.currentTime = 0;
@@ -199,6 +200,7 @@ function closeModal() {
 		playbackProgress = 0;
 
 		if ('mediaSession' in navigator) {
+			navigator.mediaSession.playbackState = 'none';
 			navigator.mediaSession.metadata = null;
 			navigator.mediaSession.setActionHandler('play', null);
 			navigator.mediaSession.setActionHandler('pause', null);
@@ -206,9 +208,21 @@ function closeModal() {
 		}
 	}
 
+	// Called by the Media Session API (system tray, keyboard key).
+	// Treats pause as a full stop but captures the current progress
+	// before resetting, so the bar shows where it was interrupted.
+	function systemPause() {
+		if (!audioElement || !isPlaying) return;
+		const snapshot = audioElement.duration
+			? (audioElement.currentTime / audioElement.duration) * 100
+			: playbackProgress;
+		destroyPlayback();
+		playbackProgress = snapshot;
+	}
+
 	function togglePlayback() {
 		if (isPlaying) {
-			stopPlayback();
+			destroyPlayback();
 		} else {
 			startPlayback();
 		}
