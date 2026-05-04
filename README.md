@@ -2,6 +2,21 @@
 
 **The official repository of sequences for [SynapSeq](https://synapseq.org).**
 
+<table>
+  <tr>
+    <td><img src="screenshots/playlist-light.png" alt="Playlist (Light)" width="100%"/></td>
+    <td><img src="screenshots/playlist-dark.png" alt="Playlist (Dark)" width="100%"/></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/favorites.png" alt="Favorites" width="100%"/></td>
+    <td><img src="screenshots/audio-details.png" alt="Audio Details" width="100%"/></td>
+  </tr>
+</table>
+
+<p align="center">
+  <a href="https://hub.synapseq.org"><img src="https://img.shields.io/badge/Try%20it-hub.synapseq.org-blue?style=for-the-badge" alt="Try it"/></a>
+</p>
+
 ---
 
 ## Purpose

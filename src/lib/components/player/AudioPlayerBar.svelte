@@ -1,0 +1,69 @@
+<script lang="ts">
+	import { Play, Square } from '@lucide/svelte';
+	import AudioDetails from './AudioDetails.svelte';
+	import type { AudioEntry } from '$lib/player/types';
+
+	type Props = {
+		selectedEntry: AudioEntry | null;
+		playMessage: string;
+		isPlaying: boolean;
+		progress: number;
+		locked: boolean;
+		onToggle: () => void;
+		playerBgClass?: string;
+	};
+
+	let { selectedEntry, playMessage, isPlaying, progress, locked, onToggle, playerBgClass = '' }: Props = $props();
+</script>
+
+<footer
+	class={[
+		'fixed bottom-3 left-3 right-3 mx-auto flex w-[min(calc(100%-24px),920px)] items-center gap-3 overflow-hidden rounded-[24px] border border-[var(--line-strong)] bg-[var(--panel-strong)] shadow-[0_8px_32px_rgba(0,0,0,0.14),0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-3xl transition-all duration-300 sm:rounded-[28px]',
+		isPlaying ? 'p-2.5 pr-3 sm:p-3 sm:pr-4' : ['p-2.5 pr-3 sm:p-3 sm:pr-4', playerBgClass]
+	]}
+	aria-label="Audio player"
+>
+	<!-- Progress fill -->
+	{#if isPlaying}
+		<div
+			class={['absolute top-0 left-0 h-full transition-[width] duration-300 ease-linear opacity-90', playerBgClass]}
+			style="width: {progress}%"
+		></div>
+		<!-- Subtle shimmer at progress edge -->
+		<div
+			class="absolute top-0 h-full w-6 bg-gradient-to-r from-transparent to-white/10 transition-[left] duration-300 ease-linear"
+			style="left: calc({progress}% - 24px)"
+		></div>
+	{/if}
+
+	{#if selectedEntry}
+		<div class="relative z-10 flex w-full items-center gap-2.5 sm:gap-3">
+			<AudioDetails entry={selectedEntry} context="player" />
+
+			<div class="ml-auto flex shrink-0 items-center gap-2 sm:gap-2.5">
+				{#if playMessage && !isPlaying}
+					<span class="hidden max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap text-[0.8rem] text-[var(--muted)] sm:block">
+						{playMessage}
+					</span>
+				{/if}
+
+				<!-- Play/Stop button -->
+				<button
+					class="relative z-10 inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border border-transparent bg-[var(--accent)] text-[#fffaf1] shadow-[0_2px_12px_rgba(177,77,42,0.4)] transition-all duration-150 hover:-translate-y-px hover:bg-[var(--accent-strong)] hover:shadow-[0_4px_16px_rgba(177,77,42,0.5)] active:scale-95 sm:h-12 sm:w-auto sm:min-w-[100px] sm:rounded-full sm:px-5"
+					type="button"
+					onclick={onToggle}
+				>
+					{#if isPlaying}
+						<Square size={18} fill="currentColor" />
+						<span class="hidden text-[0.85rem] font-[660] sm:block">Stop</span>
+					{:else}
+						<Play size={18} fill="currentColor" />
+						<span class="hidden text-[0.85rem] font-[660] sm:block">Play</span>
+					{/if}
+				</button>
+			</div>
+		</div>
+	{:else}
+		<p class="relative z-10 m-0 text-sm text-[var(--muted)]">Select an audio to start.</p>
+	{/if}
+</footer>
