@@ -6,6 +6,7 @@ import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
 import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
 import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
 import StatePanel from '$lib/components/player/StatePanel.svelte';
+import AudioPlaybackModal from '$lib/components/AudioPlaybackModal.svelte';
 import { themeStorageKey, categoryStorageKey, currentAudioStorageKey } from '$lib/player/constants';
 import { favoritesStore, addFavorite, removeFavorite, getFavorites } from '$lib/player/favorites';
 import { getCategoryTheme, type Category } from '$lib/category-themes';
@@ -19,6 +20,19 @@ let theme = $state<Theme>('light');
 let isLoading = $state(true);
 let errorMessage = $state('');
 let playMessage = $state('');
+let showModal = $state(false);
+
+function artworkFor(id: string) {
+	return `/artwork/${id}.webp`;
+}
+
+function getAudioData(entry: AudioEntry | null) {
+	if (!entry) return null;
+	return {
+		...entry,
+		artwork: artworkFor(entry.id)
+	};
+}
 
 let categories = $derived.by(() => [
 	'All',
@@ -38,6 +52,8 @@ let visibleEntries = $derived.by(() => {
 let selectedEntry = $derived.by(() =>
 	entries.find((entry) => entry.id === selectedAudioId) ?? visibleEntries[0] ?? null
 );
+
+let modalAudioData = $derived(getAudioData(selectedEntry));
 	let categoryTheme = $derived.by(() => getCategoryTheme(selectedCategory as Category));
 	let categoryBgClass = $derived.by(() => categoryTheme?.bgClass ?? '');
 	let categoryBgSubtleClass = $derived.by(() => categoryTheme?.bgSubtleClass ?? '');
@@ -117,7 +133,11 @@ let selectedEntry = $derived.by(() =>
 	function playSelected() {
 		if (!selectedEntry) return;
 
-		playMessage = `${selectedEntry.name} is selected.`;
+		showModal = true;
+	}
+
+	function handleModalClose() {
+		showModal = false;
 	}
 
 	function writeStorage(key: string, value: string) {
@@ -184,6 +204,8 @@ let selectedEntry = $derived.by(() =>
 </main>
 
 <AudioPlayerBar {selectedEntry} {playMessage} onPlay={playSelected} categoryBgClass={categoryBgClass} />
+
+<AudioPlaybackModal show={showModal} audio={modalAudioData} onclose={handleModalClose} />
 
 <style>
 	:global(body) {
