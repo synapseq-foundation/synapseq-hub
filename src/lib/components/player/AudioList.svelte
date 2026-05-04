@@ -32,7 +32,7 @@
 		{@const selected = selectedEntry?.id === entry.id}
 		<article
 			class={[
-				'group grid grid-cols-[1fr_auto] items-center overflow-hidden rounded-2xl border transition-all duration-200 ease-in-out sm:rounded-[22px]',
+				'group relative grid grid-cols-[1fr_auto] items-center overflow-hidden rounded-2xl border transition-all duration-200 ease-in-out sm:rounded-[22px]',
 				selected
 					? 'border-[var(--accent)] bg-[var(--panel-strong)] shadow-[0_0_0_3px_var(--accent-soft),0_4px_20px_rgba(0,0,0,0.08)]'
 					: 'border-[var(--line)] bg-[var(--panel-strong)] hover:border-[var(--line-strong)] hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]',

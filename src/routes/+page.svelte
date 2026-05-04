@@ -279,6 +279,7 @@
 
 <main
 	class="overflow-hidden px-2.5 pt-3 pb-32 sm:px-4 sm:pt-5 sm:pb-36"
+	style="padding-top: calc(0.75rem + env(safe-area-inset-top, 0px))"
 	aria-labelledby="player-title"
 >
 	<PlayerHeader
