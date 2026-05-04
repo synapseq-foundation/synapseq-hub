@@ -6,7 +6,6 @@ import CategoryBadges from '$lib/components/player/CategoryBadges.svelte';
 import PlayerHeader from '$lib/components/player/PlayerHeader.svelte';
 import LoadingScreen from '$lib/components/player/LoadingScreen.svelte';
 import StatePanel from '$lib/components/player/StatePanel.svelte';
-import AudioPlaybackModal from '$lib/components/AudioPlaybackModal.svelte';
 import { themeStorageKey, categoryStorageKey, currentAudioStorageKey } from '$lib/player/constants';
 import { favoritesStore, addFavorite, removeFavorite, getFavorites } from '$lib/player/favorites';
 import { getCategoryTheme, type Category } from '$lib/category-themes';
@@ -20,21 +19,16 @@ let theme = $state<Theme>('light');
 let isLoading = $state(true);
 let errorMessage = $state('');
 let playMessage = $state('');
-let showModal = $state(false);
+let isPlaying = $state(false);
+let playerLocked = $state(false);
+let playbackProgress = $state(0);
+let audioElement: Audio | null = null;
 
-function artworkFor(id: string) {
-	return `/artwork/${id}.webp`;
-}
+	function artworkFor(id: string) {
+		return `/artwork/${id}.webp`;
+	}
 
-function getAudioData(entry: AudioEntry | null) {
-	if (!entry) return null;
-	return {
-		...entry,
-		artwork: artworkFor(entry.id)
-	};
-}
-
-let categories = $derived.by(() => [
+	let categories = $derived.by(() => [
 	'All',
 	'Favorites',
 	...Array.from(new Set(entries.map((entry) => entry.category))).sort((a, b) => a.localeCompare(b))
@@ -53,7 +47,6 @@ let selectedEntry = $derived.by(() =>
 	entries.find((entry) => entry.id === selectedAudioId) ?? visibleEntries[0] ?? null
 );
 
-let modalAudioData = $derived(getAudioData(selectedEntry));
 	let categoryTheme = $derived.by(() => getCategoryTheme(selectedCategory as Category));
 	let categoryBgClass = $derived.by(() => categoryTheme?.bgClass ?? '');
 	let categoryBgSubtleClass = $derived.by(() => categoryTheme?.bgSubtleClass ?? '');
@@ -119,26 +112,9 @@ let modalAudioData = $derived(getAudioData(selectedEntry));
 		return favorites.includes(id);
 	}
 
-	function selectEntry(entry: AudioEntry) {
-		selectedAudioId = entry.id;
-		playMessage = '';
-		writeStorage(currentAudioStorageKey, entry.id);
-		showModal = true;
-	}
-
 	function selectCategory(category: string) {
 		selectedCategory = category;
 		writeStorage(categoryStorageKey, category);
-	}
-
-	function playSelected() {
-		if (!selectedEntry) return;
-
-		showModal = true;
-	}
-
-	function handleModalClose() {
-		showModal = false;
 	}
 
 	function writeStorage(key: string, value: string) {
@@ -160,6 +136,69 @@ let modalAudioData = $derived(getAudioData(selectedEntry));
 		if (storedAudioId && entries.some((e) => e.id === storedAudioId)) {
 			selectedAudioId = storedAudioId;
 		}
+	}
+
+	function startPlayback() {
+		if (!selectedEntry || isPlaying) return;
+
+		const audio = new Audio(`https://audio.synapseq.org/hub/${selectedEntry.id}.mp3`);
+		audio.addEventListener('timeupdate', () => {
+			if (audio.duration) {
+				playbackProgress = (audio.currentTime / audio.duration) * 100;
+			}
+		});
+		audio.addEventListener('ended', () => {
+			stopPlayback();
+		});
+		audio.play();
+		audioElement = audio;
+		isPlaying = true;
+		playerLocked = true;
+
+		if ('mediaSession' in navigator) {
+			navigator.mediaSession.metadata = new MediaMetadata({
+				title: selectedEntry.name,
+				artist: selectedEntry.author,
+				album: 'SynapSeq Hub',
+				artwork: [
+					{ src: `/artwork/${selectedEntry.id}.webp`, sizes: '512x512', type: 'image/webp' }
+				]
+			});
+			navigator.mediaSession.setActionHandler('play', () => startPlayback());
+			navigator.mediaSession.setActionHandler('pause', () => stopPlayback());
+			navigator.mediaSession.setActionHandler('stop', () => stopPlayback());
+		}
+	}
+
+	function stopPlayback() {
+		if (!audioElement) return;
+		audioElement.pause();
+		audioElement.currentTime = 0;
+		audioElement = null;
+		isPlaying = false;
+		playerLocked = false;
+		playbackProgress = 0;
+
+		if ('mediaSession' in navigator) {
+			navigator.mediaSession.metadata = null;
+			navigator.mediaSession.setActionHandler('play', null);
+			navigator.mediaSession.setActionHandler('pause', null);
+			navigator.mediaSession.setActionHandler('stop', null);
+		}
+	}
+
+	function togglePlayback() {
+		if (isPlaying) {
+			stopPlayback();
+		} else {
+			startPlayback();
+		}
+	}
+
+	function selectEntry(entry: AudioEntry) {
+		selectedAudioId = entry.id;
+		playMessage = '';
+		writeStorage(currentAudioStorageKey, entry.id);
 	}
 </script>
 
@@ -199,14 +238,15 @@ let modalAudioData = $derived(getAudioData(selectedEntry));
 				onToggleFavorite={toggleFavorite}
 				categoryBgSubtleClass={categoryBgSubtleClass}
 				categoryBorderClass={categoryBorderClass}
+				locked={playerLocked}
 			/>
 		{/if}
 	{/if}
 </main>
 
-<AudioPlayerBar {selectedEntry} {playMessage} onPlay={playSelected} categoryBgClass={categoryBgClass} />
+<AudioPlayerBar {selectedEntry} {playMessage} {isPlaying} progress={playbackProgress} locked={playerLocked} onToggle={togglePlayback} categoryBgClass={categoryBgClass} />
 
-<AudioPlaybackModal show={showModal} audio={modalAudioData} onclose={handleModalClose} />
+<!-- AudioPlaybackModal removed - playback now handled directly in AudioPlayerBar -->
 
 <style>
 	:global(body) {

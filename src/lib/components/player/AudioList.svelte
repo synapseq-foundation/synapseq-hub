@@ -11,6 +11,7 @@
 		onToggleFavorite: (entry: AudioEntry) => void;
 		categoryBgSubtleClass?: string;
 		categoryBorderClass?: string;
+		locked?: boolean;
 	};
 
 	let {
@@ -20,7 +21,8 @@
 		onSelectEntry,
 		onToggleFavorite,
 		categoryBgSubtleClass = '',
-		categoryBorderClass = ''
+		categoryBorderClass = '',
+		locked = false
 	}: Props = $props();
 </script>
 
@@ -40,7 +42,7 @@
 			<button
 				type="button"
 				class="min-w-0 cursor-pointer border-0 bg-transparent p-3 text-left text-inherit"
-				onclick={() => onSelectEntry(entry)}
+				onclick={() => { if (locked) return; onSelectEntry(entry); }}
 			>
 				<AudioDetails {entry} context="row" />
 			</button>
