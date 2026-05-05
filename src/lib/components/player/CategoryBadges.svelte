@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Layers, Heart, Zap, Moon, Waves, Trash2 } from '@lucide/svelte';
+	import { Layers, Heart, Zap, Moon, Waves, BedDouble, Trash2 } from '@lucide/svelte';
 
 	type Props = {
 		categories: string[];
@@ -16,7 +16,8 @@
 		Favorites: Heart,
 		Focus: Zap,
 		Meditation: Moon,
-		Relaxation: Waves
+		Relaxation: Waves,
+		Sleep: BedDouble
 	};
 
 	function getIcon(category: string) {

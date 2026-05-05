@@ -1,4 +1,4 @@
-export type Category = 'All' | 'Favorites' | 'Focus' | 'Meditation' | 'Relaxation';
+export type Category = 'All' | 'Favorites' | 'Focus' | 'Meditation' | 'Relaxation' | 'Sleep';
 
 export type CategoryTheme = {
 	bgClass: string;
@@ -40,6 +40,14 @@ export const categoryThemes: Record<Exclude<Category, 'All'>, CategoryTheme> = {
 		borderClass: 'border-neutral-500/60',
 		headerBorderClass: 'border-neutral-500/60',
 		headerBgGradientClass: 'bg-gradient-to-r from-neutral-500/5 via-transparent to-neutral-500/5',
+		transitionClass: 'transition-colors duration-300 ease-in-out'
+	},
+	Sleep: {
+		bgClass: 'bg-indigo-400/30',
+		bgSubtleClass: 'bg-indigo-400/10',
+		borderClass: 'border-indigo-400/50',
+		headerBorderClass: 'border-indigo-400/50',
+		headerBgGradientClass: 'bg-gradient-to-r from-indigo-400/5 via-transparent to-indigo-400/5',
 		transitionClass: 'transition-colors duration-300 ease-in-out'
 	}
 };

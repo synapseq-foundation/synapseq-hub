@@ -27,12 +27,13 @@
 		rose: '244, 63, 94',
 		teal: '20, 184, 166',
 		amber: '245, 158, 11',
-		neutral: '115, 115, 115'
+		neutral: '115, 115, 115',
+		indigo: '129, 140, 248'
 	};
 
 	let categoryColorName = $derived.by(() => {
 		if (!categoryTheme) return null;
-		const m = categoryTheme.bgSubtleClass.match(/bg-(\w+)-500/);
+		const m = categoryTheme.bgSubtleClass.match(/bg-(\w+)-\d+/);
 		return m ? m[1] : null;
 	});
 
