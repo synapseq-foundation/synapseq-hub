@@ -14,7 +14,7 @@
 		currentAudioStorageKey
 	} from '$lib/player/constants';
 	import { favoritesStore, addFavorite, removeFavorite, getFavorites, clearFavorites } from '$lib/player/favorites';
-	import { getCategoryTheme, type Category } from '$lib/category-themes';
+	import { getCategoryTheme, categoryThemes, type Category } from '$lib/category-themes';
 	import type { AudioEntry, Manifest, Theme } from '$lib/player/types';
 
 	let entries = $state.raw<AudioEntry[]>([]);
@@ -75,6 +75,20 @@
 		return entries
 			.filter((entry) => entry.category === selectedCategory)
 			.sort((a, b) => a.name.localeCompare(b.name));
+	});
+
+	// Groups for the "All" desktop view: each real category sorted alphabetically with its entries
+	let groupedEntries = $derived.by(() => {
+		const cats = Array.from(new Set(entries.map((e) => e.category))).sort((a, b) =>
+			a.localeCompare(b)
+		);
+		return cats.map((cat) => ({
+			category: cat,
+			theme: getCategoryTheme(cat as Category),
+			entries: entries
+				.filter((e) => e.category === cat)
+				.sort((a, b) => a.name.localeCompare(b.name))
+		}));
 	});
 	let selectedEntry = $derived.by(
 		() => entries.find((entry) => entry.id === selectedAudioId) ?? visibleEntries[0] ?? null
@@ -348,8 +362,8 @@
 			<!-- Mobile: stacked. Desktop: sidebar + content side-by-side -->
 			<div class="lg:flex lg:items-start lg:gap-6">
 
-				<!-- Categories sidebar (desktop: sticky floating panel; mobile: horizontal strip) -->
-				<aside class="lg:sticky lg:top-[calc(6rem+env(safe-area-inset-top,0px))] lg:w-52 lg:shrink-0">
+			<!-- Categories sidebar (desktop: sticky floating panel; mobile: horizontal strip) -->
+			<aside class="lg:sticky lg:top-[calc(5.5rem+env(safe-area-inset-top,0px)+1.5rem)] lg:w-52 lg:shrink-0">
 					<CategoryBadges
 						{categories}
 						{selectedCategory}
@@ -364,16 +378,18 @@
 					{#if selectedCategory === 'Favorites' && visibleEntries.length === 0}
 						<StatePanel message="You haven't favorited any audio yet." />
 					{:else}
-						<AudioList
-							entries={visibleEntries}
-							{selectedEntry}
-							{isFavorite}
-							onSelectEntry={selectEntry}
-							onToggleFavorite={toggleFavorite}
-							{categoryBgSubtleClass}
-							{categoryBorderClass}
-							locked={playerLocked}
-						/>
+					<AudioList
+						entries={visibleEntries}
+						{groupedEntries}
+						{selectedCategory}
+						{selectedEntry}
+						{isFavorite}
+						onSelectEntry={selectEntry}
+						onToggleFavorite={toggleFavorite}
+						{categoryBgSubtleClass}
+						{categoryBorderClass}
+						locked={playerLocked}
+					/>
 					{/if}
 				</div>
 
